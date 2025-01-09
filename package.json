@@ -1,0 +1,39 @@
+{
+  "name": "sora-js-sdk-examples",
+  "version": "2024.2.2",
+  "description": "WebRTC SFU Sora JavaScript SDK Examples",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "test": "playwright test --project=chromium",
+    "lint": "biome lint .",
+    "fmt": "biome format --write .",
+    "check": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shiguredo/sora-js-sdk-examples.git"
+  },
+  "author": "Shiguredo Inc.",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://discord.gg/shiguredo"
+  },
+  "homepage": "https://github.com/shiguredo/sora-js-sdk-examples#readme",
+  "dependencies": {
+    "jose": "5.9.6",
+    "sora-js-sdk": "2024.2.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@playwright/test": "1.49.1",
+    "jsdom": "26.0.0",
+    "tslib": "2.8.1",
+    "typescript": "5.7.3",
+    "vite": "6.0.7"
+  },
+  "packageManager": "pnpm@9.15.3",
+  "engines": {
+    "node": ">=18"
+  }
+}

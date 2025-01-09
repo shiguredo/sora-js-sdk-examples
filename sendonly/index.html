@@ -1,0 +1,37 @@
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" href="data:,">
+  <title>送信のみサンプル</title>
+</head>
+
+<body>
+  <div class="container">
+    <h2>送信のみサンプル</h2>
+    <p>
+      <button id="connect">connect</button>
+      <button id="disconnect">disconnect</button>
+    </p>
+    <p>
+      <span>channel_id:</span>
+      <span id="channel-id"></span>
+      <br />
+      <span>session_id:</span>
+      <span id="session-id"></span>
+      <br />
+      <span>connection_id:</span>
+      <span id="connection-id"></span>
+    </p>
+    <video id="local-video" muted autoplay playsinline controls
+      style="border: 1px solid blue; transform: scaleX(-1);"></video>
+    <p>
+      <button id="get-stats">getStats</button>
+    <pre id="stats-report-json"></pre>
+    </p>
+  </div>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+
+</html>

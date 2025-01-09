@@ -1,0 +1,59 @@
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" href="data:,">
+  <title>リアルタイムメッセージングサンプル</title>
+</head>
+
+<body>
+  <div class="container">
+    <h1>リアルタイムメッセージングサンプル</h1>
+    <p>複数のブラウザで開いて sendMessage することで動作確認できます</p>
+    <p>
+      <button id="connect">connect</button>
+      <button id="disconnect" disabled>disconnect</button>
+      <button id="get-stats">getStats</button><br />
+    </p>
+    <p>
+      <span>channel_id:</span>
+      <span id="channel-id"></span>
+      <br />
+      <span>session_id:</span>
+      <span id="session-id"></span>
+      <br />
+      <span>connection_id:</span>
+      <span id="connection-id"></span>
+    </p>
+    <div style="display: flex;">
+      <input type="text" name="message" />
+      <button id="send-message" disabled>sendMessage</button><br />
+    </div>
+    <div>
+      <input type="checkbox" id="check-compress" checked />
+      <label for="check-compress">Compress</label>
+    </div>
+    <div>
+      <input type="checkbox" id="check-header" />
+      <label for="check-header">Header</label>
+    </div>
+    <div>
+      <h3>messaging</h3>
+      <ul id="messaging">
+      </ul>
+    </div>
+    <div>
+      <h3>messages</h3>
+      <ul id="received-messages">
+      </ul>
+    </div>
+    <p>
+      <button id="get-stats">getStats</button>
+    <pre id="stats-report-json"></pre>
+    </p>
+  </div>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+
+</html>
