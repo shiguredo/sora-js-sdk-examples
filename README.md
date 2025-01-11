@@ -15,6 +15,11 @@ Please read <https://github.com/shiguredo/oss> before use.
 
 利用前に <https://github.com/shiguredo/oss> をお読みください。
 
+## 注意
+
+このサンプルは Sora JavaScript SDK の利用サンプルであり、
+Sora の機能を確認したりする場合は [Sora DevTools](https://github.com/shiguredo/sora-devtools/) をご利用ください。
+
 ## 使い方
 
 ```bash
