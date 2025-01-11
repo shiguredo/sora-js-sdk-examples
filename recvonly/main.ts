@@ -34,14 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const report of statsReport.values()) {
       statsReportJson.push(report);
     }
-    const statsReportJsonElement =
-      document.querySelector<HTMLPreElement>("#stats-report-json");
+    const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
     if (statsReportJsonElement) {
-      statsReportJsonElement.textContent = JSON.stringify(
-        statsReportJson,
-        null,
-        2,
-      );
+      statsReportJsonElement.textContent = JSON.stringify(statsReportJson, null, 2);
     }
   });
 });
@@ -120,8 +115,7 @@ class SoraClient {
     // Sora の場合、event.streams には MediaStream が 1 つだけ含まれる
     const stream = event.streams[0];
     const remoteVideoId = `remote-video-${stream.id}`;
-    const remoteVideos =
-      document.querySelector<HTMLDivElement>("#remote-videos");
+    const remoteVideos = document.querySelector<HTMLDivElement>("#remote-videos");
     if (remoteVideos && !remoteVideos.querySelector(`#${remoteVideoId}`)) {
       const remoteVideo = document.createElement("video");
       remoteVideo.id = remoteVideoId;

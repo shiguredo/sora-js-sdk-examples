@@ -6,12 +6,8 @@ test("sendrecv x2", async ({ browser }) => {
 
   // テストごとに異なる channelName を生成
   const channelName = crypto.randomUUID();
-  await sendrecv1.goto(
-    `http://localhost:9000/sendrecv/?channelName=${channelName}`,
-  );
-  await sendrecv2.goto(
-    `http://localhost:9000/sendrecv/?channelName=${channelName}`,
-  );
+  await sendrecv1.goto(`http://localhost:9000/sendrecv/?channelName=${channelName}`);
+  await sendrecv2.goto(`http://localhost:9000/sendrecv/?channelName=${channelName}`);
 
   await sendrecv1.click("#connect");
   await sendrecv2.click("#connect");
@@ -20,20 +16,14 @@ test("sendrecv x2", async ({ browser }) => {
   await sendrecv1.waitForSelector("#connection-id:not(:empty)");
 
   // "connection-id" 要素の内容を取得
-  const sendrecv1ConnectionId = await sendrecv1.$eval(
-    "#connection-id",
-    (el) => el.textContent,
-  );
+  const sendrecv1ConnectionId = await sendrecv1.$eval("#connection-id", (el) => el.textContent);
   console.log(`sendrecv1 connectionId=${sendrecv1ConnectionId}`);
 
   // "connection-id" 要素が存在し、その内容が空でないことを確認するまで待つ
   await sendrecv2.waitForSelector("#connection-id:not(:empty)");
 
   // "connection-id" 要素の内容を取得
-  const sendrecv2ConnectionId = await sendrecv2.$eval(
-    "#connection-id",
-    (el) => el.textContent,
-  );
+  const sendrecv2ConnectionId = await sendrecv2.$eval("#connection-id", (el) => el.textContent);
   console.log(`sendrecv2 connectionId=${sendrecv2ConnectionId}`);
 
   // レース対策
@@ -48,15 +38,10 @@ test("sendrecv x2", async ({ browser }) => {
   // 統計情報が表示されるまで待機
   await sendrecv1.waitForSelector("#stats-report-json");
   // テキストコンテンツから統計情報を取得
-  const sendrecv1StatsReportJson: Record<string, unknown>[] =
-    await sendrecv1.evaluate(() => {
-      const statsReportElement = document.querySelector(
-        "#stats-report-json",
-      ) as HTMLPreElement;
-      return statsReportElement
-        ? JSON.parse(statsReportElement.textContent || "[]")
-        : [];
-    });
+  const sendrecv1StatsReportJson: Record<string, unknown>[] = await sendrecv1.evaluate(() => {
+    const statsReportElement = document.querySelector("#stats-report-json") as HTMLPreElement;
+    return statsReportElement ? JSON.parse(statsReportElement.textContent || "[]") : [];
+  });
 
   const sendrecv1VideoOutboundRtpStats = sendrecv1StatsReportJson.find(
     (stats) => stats.type === "outbound-rtp" && stats.kind === "video",
@@ -80,15 +65,10 @@ test("sendrecv x2", async ({ browser }) => {
   // 統計情報が表示されるまで待機
   await sendrecv2.waitForSelector("#stats-report-json");
   // デキストコンテンツから統計情報を取得
-  const sendrecv2StatsReportJson: Record<string, unknown>[] =
-    await sendrecv2.evaluate(() => {
-      const statsReportElement = document.querySelector(
-        "#stats-report-json",
-      ) as HTMLPreElement;
-      return statsReportElement
-        ? JSON.parse(statsReportElement.textContent || "[]")
-        : [];
-    });
+  const sendrecv2StatsReportJson: Record<string, unknown>[] = await sendrecv2.evaluate(() => {
+    const statsReportElement = document.querySelector("#stats-report-json") as HTMLPreElement;
+    return statsReportElement ? JSON.parse(statsReportElement.textContent || "[]") : [];
+  });
 
   const sendrecv2VideoOutboundRtpStats = sendrecv2StatsReportJson.find(
     (stats) => stats.type === "outbound-rtp" && stats.kind === "video",

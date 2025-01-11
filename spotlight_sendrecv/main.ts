@@ -55,11 +55,7 @@ class SoraClient {
       spotlightNumber: 1,
     };
 
-    this.connection = this.sora.sendrecv(
-      this.channelId,
-      undefined,
-      this.options,
-    );
+    this.connection = this.sora.sendrecv(this.channelId, undefined, this.options);
 
     this.connection.on("notify", this.onnotify.bind(this));
     this.connection.on("track", this.ontrack.bind(this));
@@ -102,8 +98,7 @@ class SoraClient {
       event.event_type === "connection.created" &&
       this.connection.connectionId === event.connection_id
     ) {
-      const connectionIdElement =
-        document.querySelector<HTMLDivElement>("#connection-id");
+      const connectionIdElement = document.querySelector<HTMLDivElement>("#connection-id");
       if (connectionIdElement) {
         connectionIdElement.textContent = event.connection_id;
       }
@@ -113,8 +108,7 @@ class SoraClient {
   private ontrack(event: RTCTrackEvent): void {
     const stream = event.streams[0];
     const remoteVideoId = `remote-video-${stream.id}`;
-    const remoteVideos =
-      document.querySelector<HTMLDivElement>("#remote-videos");
+    const remoteVideos = document.querySelector<HTMLDivElement>("#remote-videos");
     if (remoteVideos && !remoteVideos.querySelector(`#${remoteVideoId}`)) {
       const remoteVideo = document.createElement("video");
       remoteVideo.id = remoteVideoId;
@@ -131,13 +125,9 @@ class SoraClient {
 
   private onremovetrack(event: MediaStreamTrackEvent): void {
     const target = event.target as MediaStream;
-    const remoteVideo = document.querySelector<HTMLVideoElement>(
-      `#remote-video-${target.id}`,
-    );
+    const remoteVideo = document.querySelector<HTMLVideoElement>(`#remote-video-${target.id}`);
     if (remoteVideo) {
-      document
-        .querySelector<HTMLDivElement>("#remote-videos")
-        ?.removeChild(remoteVideo);
+      document.querySelector<HTMLDivElement>("#remote-videos")?.removeChild(remoteVideo);
     }
   }
 }

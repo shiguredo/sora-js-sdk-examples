@@ -1,9 +1,6 @@
 import * as jose from "jose";
 
-export const generateJwt = async (
-  channelId: string,
-  secretKey: string,
-): Promise<string> => {
+export const generateJwt = async (channelId: string, secretKey: string): Promise<string> => {
   const header = { alg: "HS256", typ: "JWT" };
   return (
     new jose.SignJWT({

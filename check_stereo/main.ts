@@ -28,50 +28,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   // デバイスの変更を監視
   navigator.mediaDevices.addEventListener("devicechange", updateDeviceLists);
 
-  document
-    .querySelector("#sendonly-connect")
-    ?.addEventListener("click", async () => {
-      const audioInputSelect = document.querySelector<HTMLSelectElement>(
-        "#sendonly-audio-input",
-      );
-      const selectedAudioDeviceId = audioInputSelect?.value;
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: false,
-        audio: {
-          deviceId: selectedAudioDeviceId
-            ? { exact: selectedAudioDeviceId }
-            : undefined,
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
-          channelCount: 2,
-          sampleRate: 48000,
-          sampleSize: 16,
-        },
-      });
-      await sendonly.connect(stream);
+  document.querySelector("#sendonly-connect")?.addEventListener("click", async () => {
+    const audioInputSelect = document.querySelector<HTMLSelectElement>("#sendonly-audio-input");
+    const selectedAudioDeviceId = audioInputSelect?.value;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: false,
+      audio: {
+        deviceId: selectedAudioDeviceId ? { exact: selectedAudioDeviceId } : undefined,
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+        channelCount: 2,
+        sampleRate: 48000,
+        sampleSize: 16,
+      },
     });
+    await sendonly.connect(stream);
+  });
 
-  document
-    .querySelector("#recvonly-connect")
-    ?.addEventListener("click", async () => {
-      await recvonly.connect();
-    });
+  document.querySelector("#recvonly-connect")?.addEventListener("click", async () => {
+    await recvonly.connect();
+  });
 });
 
 // デバイスリストを更新する関数
 async function updateDeviceLists() {
   const devices = await navigator.mediaDevices.enumerateDevices();
 
-  const audioInputSelect = document.querySelector<HTMLSelectElement>(
-    "#sendonly-audio-input",
-  );
+  const audioInputSelect = document.querySelector<HTMLSelectElement>("#sendonly-audio-input");
 
   if (audioInputSelect) {
     audioInputSelect.innerHTML = "";
-    const audioInputDevices = devices.filter(
-      (device) => device.kind === "audioinput",
-    );
+    const audioInputDevices = devices.filter((device) => device.kind === "audioinput");
     for (const device of audioInputDevices) {
       const option = document.createElement("option");
       option.value = device.deviceId;
@@ -138,9 +126,7 @@ class SendonlyClient {
     if (!this.connection.pc) {
       return undefined;
     }
-    const sender = this.connection.pc
-      .getSenders()
-      .find((sender) => sender.track?.kind === "audio");
+    const sender = this.connection.pc.getSenders().find((sender) => sender.track?.kind === "audio");
     if (!sender) {
       return undefined;
     }
@@ -148,8 +134,7 @@ class SendonlyClient {
   }
 
   private initializeCanvas() {
-    this.canvas =
-      document.querySelector<HTMLCanvasElement>("#sendonly-waveform");
+    this.canvas = document.querySelector<HTMLCanvasElement>("#sendonly-waveform");
     if (this.canvas) {
       this.canvasCtx = this.canvas.getContext("2d");
     }
@@ -199,8 +184,7 @@ class SendonlyClient {
       }
 
       // sendonly-stereo 要素に結果を反映
-      const sendonlyStereoElement =
-        document.querySelector<HTMLDivElement>("#sendonly-stereo");
+      const sendonlyStereoElement = document.querySelector<HTMLDivElement>("#sendonly-stereo");
       if (sendonlyStereoElement) {
         sendonlyStereoElement.textContent = result;
       }
@@ -224,11 +208,7 @@ class SendonlyClient {
 
     this.canvasCtx.fillStyle = "rgb(240, 240, 240)";
     this.canvasCtx.fillRect(0, 0, width, height);
-    const drawChannel = (
-      dataArray: Float32Array,
-      color: string,
-      offset: number,
-    ) => {
+    const drawChannel = (dataArray: Float32Array, color: string, offset: number) => {
       if (!this.canvasCtx) return;
 
       this.canvasCtx.lineWidth = 3;
@@ -270,10 +250,7 @@ class SendonlyClient {
     this.canvasCtx.fillText(isMonaural ? "Monaural" : "Stereo", 10, 30);
   }
 
-  private isMonaural(
-    dataArrayL: Float32Array,
-    dataArrayR: Float32Array,
-  ): boolean {
+  private isMonaural(dataArrayL: Float32Array, dataArrayR: Float32Array): boolean {
     const threshold = 0.001;
     for (let i = 0; i < dataArrayL.length; i++) {
       if (Math.abs(dataArrayL[i] - dataArrayR[i]) > threshold) {
@@ -289,9 +266,7 @@ class SendonlyClient {
       event.event_type === "connection.created" &&
       this.connection.connectionId === event.connection_id
     ) {
-      const connectionIdElement = document.querySelector<HTMLDivElement>(
-        "#sendonly-connection-id",
-      );
+      const connectionIdElement = document.querySelector<HTMLDivElement>("#sendonly-connection-id");
       if (connectionIdElement) {
         connectionIdElement.textContent = event.connection_id;
       }
@@ -301,13 +276,10 @@ class SendonlyClient {
   private startChannelCheck() {
     this.channelCheckInterval = window.setInterval(async () => {
       const channels = await this.getChannels();
-      const channelElement =
-        document.querySelector<HTMLDivElement>("#sendonly-channels");
+      const channelElement = document.querySelector<HTMLDivElement>("#sendonly-channels");
       if (channelElement) {
         channelElement.textContent =
-          channels !== undefined
-            ? `getParameters codecs channels: ${channels}`
-            : "undefined";
+          channels !== undefined ? `getParameters codecs channels: ${channels}` : "undefined";
       }
     }, 1000); // 1秒ごとにチェック
   }
@@ -335,11 +307,7 @@ class RecvonlyClient {
     this.secretKey = secretKey;
 
     this.sora = Sora.connection(signalingUrl, this.debug);
-    this.connection = this.sora.recvonly(
-      this.channelId,
-      undefined,
-      this.options,
-    );
+    this.connection = this.sora.recvonly(this.channelId, undefined, this.options);
     this.connection.on("notify", this.onnotify.bind(this));
     this.connection.on("track", this.ontrack.bind(this));
 
@@ -350,19 +318,15 @@ class RecvonlyClient {
     const jwt = await generateJwt(this.channelId, this.secretKey);
     this.connection.metadata = { access_token: jwt };
 
-    const forceStereoOutputElement =
-      document.querySelector<HTMLInputElement>("#forceStereoOutput");
-    const forceStereoOutput = forceStereoOutputElement
-      ? forceStereoOutputElement.checked
-      : false;
+    const forceStereoOutputElement = document.querySelector<HTMLInputElement>("#forceStereoOutput");
+    const forceStereoOutput = forceStereoOutputElement ? forceStereoOutputElement.checked : false;
     this.connection.options.forceStereoOutput = forceStereoOutput;
 
     await this.connection.connect();
   }
 
   private initializeCanvas() {
-    this.canvas =
-      document.querySelector<HTMLCanvasElement>("#recvonly-waveform");
+    this.canvas = document.querySelector<HTMLCanvasElement>("#recvonly-waveform");
     if (this.canvas) {
       this.canvasCtx = this.canvas.getContext("2d");
     }
@@ -412,8 +376,7 @@ class RecvonlyClient {
       }
 
       // 既存のコード
-      const recvonlyStereoElement =
-        document.querySelector<HTMLDivElement>("#recvonly-stereo");
+      const recvonlyStereoElement = document.querySelector<HTMLDivElement>("#recvonly-stereo");
       if (recvonlyStereoElement) {
         recvonlyStereoElement.textContent = result;
       }
@@ -437,11 +400,7 @@ class RecvonlyClient {
 
     this.canvasCtx.fillStyle = "rgb(240, 240, 240)";
     this.canvasCtx.fillRect(0, 0, width, height);
-    const drawChannel = (
-      dataArray: Float32Array,
-      color: string,
-      offset: number,
-    ) => {
+    const drawChannel = (dataArray: Float32Array, color: string, offset: number) => {
       if (!this.canvasCtx) return;
 
       this.canvasCtx.lineWidth = 3;
@@ -478,10 +437,7 @@ class RecvonlyClient {
     this.canvasCtx.fillText(isMonaural ? "Monaural" : "Stereo", 10, 30);
   }
 
-  private isMonaural(
-    dataArrayL: Float32Array,
-    dataArrayR: Float32Array,
-  ): boolean {
+  private isMonaural(dataArrayL: Float32Array, dataArrayR: Float32Array): boolean {
     const threshold = 0.001;
     for (let i = 0; i < dataArrayL.length; i++) {
       if (Math.abs(dataArrayL[i] - dataArrayR[i]) > threshold) {
@@ -497,9 +453,7 @@ class RecvonlyClient {
       event.event_type === "connection.created" &&
       this.connection.connectionId === event.connection_id
     ) {
-      const connectionIdElement = document.querySelector<HTMLDivElement>(
-        "#recvonly-connection-id",
-      );
+      const connectionIdElement = document.querySelector<HTMLDivElement>("#recvonly-connection-id");
       if (connectionIdElement) {
         connectionIdElement.textContent = event.connection_id;
       }
@@ -513,13 +467,10 @@ class RecvonlyClient {
       this.analyzeAudioStream(new MediaStream([event.track]));
 
       // <audio> 要素に音声ストリームを設定
-      const audioElement =
-        document.querySelector<HTMLAudioElement>("#recvonly-audio");
+      const audioElement = document.querySelector<HTMLAudioElement>("#recvonly-audio");
       if (audioElement) {
         audioElement.srcObject = stream;
-        audioElement
-          .play()
-          .catch((error) => console.error("音声の再生に失敗しました:", error));
+        audioElement.play().catch((error) => console.error("音声の再生に失敗しました:", error));
       }
     }
   }

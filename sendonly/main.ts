@@ -38,14 +38,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     for (const report of statsReport.values()) {
       statsReportJson.push(report);
     }
-    const statsReportJsonElement =
-      document.querySelector<HTMLPreElement>("#stats-report-json");
+    const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
     if (statsReportJsonElement) {
-      statsReportJsonElement.textContent = JSON.stringify(
-        statsReportJson,
-        null,
-        2,
-      );
+      statsReportJsonElement.textContent = JSON.stringify(statsReportJson, null, 2);
     }
   });
 });
@@ -86,8 +81,7 @@ class SoraClient {
 
     await this.connection.connect(stream);
 
-    const videoElement =
-      document.querySelector<HTMLVideoElement>("#local-video");
+    const videoElement = document.querySelector<HTMLVideoElement>("#local-video");
     if (videoElement) {
       videoElement.srcObject = stream;
     }
@@ -96,8 +90,7 @@ class SoraClient {
   async disconnect(): Promise<void> {
     await this.connection.disconnect();
 
-    const videoElement =
-      document.querySelector<HTMLVideoElement>("#local-video");
+    const videoElement = document.querySelector<HTMLVideoElement>("#local-video");
     if (videoElement) {
       videoElement.srcObject = null;
     }

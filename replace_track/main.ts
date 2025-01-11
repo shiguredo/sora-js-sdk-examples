@@ -24,16 +24,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     await client.connect();
   });
 
-  document
-    .querySelector("#replace-stream")
-    ?.addEventListener("click", async () => {
-      // audio: true, video: true なので要注意
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true,
-      });
-      await client.replaceStream(stream);
+  document.querySelector("#replace-stream")?.addEventListener("click", async () => {
+    // audio: true, video: true なので要注意
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true,
     });
+    await client.replaceStream(stream);
+  });
 
   document.querySelector("#disconnect")?.addEventListener("click", async () => {
     await client.disconnect();
@@ -45,14 +43,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     for (const report of statsReport.values()) {
       statsReportJson.push(report);
     }
-    const statsReportJsonElement =
-      document.querySelector<HTMLPreElement>("#stats-report-json");
+    const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
     if (statsReportJsonElement) {
-      statsReportJsonElement.textContent = JSON.stringify(
-        statsReportJson,
-        null,
-        2,
-      );
+      statsReportJsonElement.textContent = JSON.stringify(statsReportJson, null, 2);
     }
   });
 });
@@ -83,11 +76,7 @@ class SoraClient {
     this.stream = new MediaStream();
 
     this.sora = Sora.connection(signalingUrl, this.debug);
-    this.connection = this.sora.sendrecv(
-      this.channelId,
-      undefined,
-      this.options,
-    );
+    this.connection = this.sora.sendrecv(this.channelId, undefined, this.options);
     this.connection.on("notify", this.onnotify.bind(this));
     this.connection.on("track", this.ontrack.bind(this));
     this.connection.on("removetrack", this.onremovetrack.bind(this));
@@ -110,16 +99,10 @@ class SoraClient {
 
   async replaceStream(stream: MediaStream) {
     if (stream.getAudioTracks().length > 0) {
-      await this.connection.replaceAudioTrack(
-        this.stream,
-        stream.getAudioTracks()[0],
-      );
+      await this.connection.replaceAudioTrack(this.stream, stream.getAudioTracks()[0]);
     }
     if (stream.getVideoTracks().length > 0) {
-      await this.connection.replaceVideoTrack(
-        this.stream,
-        stream.getVideoTracks()[0],
-      );
+      await this.connection.replaceVideoTrack(this.stream, stream.getVideoTracks()[0]);
     }
     this.stream = stream;
   }

@@ -19,45 +19,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const channelName = urlParams.get("channelName") || "";
   const channelId = `${channelIdPrefix}:${channelName}:${channelIdSuffix}`;
 
-  const sendonly = new SimulcastSendonlySoraClient(
-    signalingUrl,
-    channelId,
-    secretKey,
-    {
-      audio: false,
-      video: true,
-      videoCodecType: "VP8",
-      videoBitRate: 2500,
-      simulcast: true,
-    },
-  );
-  const recvonlyR0 = new SimulcastRecvonlySoraClient(
-    signalingUrl,
-    channelId,
-    secretKey,
-    {
-      simulcast: true,
-      simulcastRid: "r0",
-    },
-  );
-  const recvonlyR1 = new SimulcastRecvonlySoraClient(
-    signalingUrl,
-    channelId,
-    secretKey,
-    {
-      simulcast: true,
-      simulcastRid: "r1",
-    },
-  );
-  const recvonlyR2 = new SimulcastRecvonlySoraClient(
-    signalingUrl,
-    channelId,
-    secretKey,
-    {
-      simulcast: true,
-      simulcastRid: "r2",
-    },
-  );
+  const sendonly = new SimulcastSendonlySoraClient(signalingUrl, channelId, secretKey, {
+    audio: false,
+    video: true,
+    videoCodecType: "VP8",
+    videoBitRate: 2500,
+    simulcast: true,
+  });
+  const recvonlyR0 = new SimulcastRecvonlySoraClient(signalingUrl, channelId, secretKey, {
+    simulcast: true,
+    simulcastRid: "r0",
+  });
+  const recvonlyR1 = new SimulcastRecvonlySoraClient(signalingUrl, channelId, secretKey, {
+    simulcast: true,
+    simulcastRid: "r1",
+  });
+  const recvonlyR2 = new SimulcastRecvonlySoraClient(signalingUrl, channelId, secretKey, {
+    simulcast: true,
+    simulcastRid: "r2",
+  });
 
   document.querySelector("#connect")?.addEventListener("click", async () => {
     // sendonly
@@ -92,14 +72,9 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const report of statsReport.values()) {
       statsReportJson.push(report);
     }
-    const statsReportJsonElement =
-      document.querySelector<HTMLPreElement>("#stats-report-json");
+    const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
     if (statsReportJsonElement) {
-      statsReportJsonElement.textContent = JSON.stringify(
-        statsReportJson,
-        null,
-        2,
-      );
+      statsReportJsonElement.textContent = JSON.stringify(statsReportJson, null, 2);
     }
   });
 });
@@ -126,11 +101,7 @@ class SimulcastSendonlySoraClient {
     this.options = options;
 
     this.sora = Sora.connection(signaling_url, this.debug);
-    this.connection = this.sora.sendonly(
-      this.channelId,
-      undefined,
-      this.options,
-    );
+    this.connection = this.sora.sendonly(this.channelId, undefined, this.options);
     this.connection.on("notify", this.onnotify.bind(this));
   }
 
@@ -170,9 +141,7 @@ class SimulcastSendonlySoraClient {
       event.event_type === "connection.created" &&
       event.connection_id === this.connection.connectionId
     ) {
-      const localVideoConnectionId = document.querySelector(
-        "#local-video-connection-id",
-      );
+      const localVideoConnectionId = document.querySelector("#local-video-connection-id");
       if (localVideoConnectionId) {
         localVideoConnectionId.textContent = `${event.connection_id}`;
       }
@@ -202,11 +171,7 @@ class SimulcastRecvonlySoraClient {
     this.options = options;
 
     this.sora = Sora.connection(signaling_url, this.debug);
-    this.connection = this.sora.recvonly(
-      this.channelId,
-      undefined,
-      this.options,
-    );
+    this.connection = this.sora.recvonly(this.channelId, undefined, this.options);
     this.connection.on("notify", this.onnotify.bind(this));
     this.connection.on("track", this.ontrack.bind(this));
     this.connection.on("removetrack", this.onremovetrack.bind(this));

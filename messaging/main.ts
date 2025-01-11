@@ -21,13 +21,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const client = new SoraClient(signalingUrl, channelId, secretKey);
 
   document.querySelector("#connect")?.addEventListener("click", async () => {
-    const checkCompress = document.getElementById(
-      "check-compress",
-    ) as HTMLInputElement;
+    const checkCompress = document.getElementById("check-compress") as HTMLInputElement;
     const compress = checkCompress.checked;
-    const checkHeader = document.getElementById(
-      "check-header",
-    ) as HTMLInputElement;
+    const checkHeader = document.getElementById("check-header") as HTMLInputElement;
     const header = checkHeader.checked;
 
     await client.connect(compress, header);
@@ -37,16 +33,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     await client.disconnect();
   });
 
-  document
-    .querySelector("#send-message")
-    ?.addEventListener("click", async () => {
-      const value = document.querySelector<HTMLInputElement>(
-        "input[name=message]",
-      )?.value;
-      if (value !== undefined && value !== "") {
-        await client.sendMessage(value);
-      }
-    });
+  document.querySelector("#send-message")?.addEventListener("click", async () => {
+    const value = document.querySelector<HTMLInputElement>("input[name=message]")?.value;
+    if (value !== undefined && value !== "") {
+      await client.sendMessage(value);
+    }
+  });
 
   document.querySelector("#get-stats")?.addEventListener("click", async () => {
     const statsReport = await client.getStats();
@@ -54,14 +46,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     for (const report of statsReport.values()) {
       statsReportJson.push(report);
     }
-    const statsReportJsonElement =
-      document.querySelector<HTMLPreElement>("#stats-report-json");
+    const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
     if (statsReportJsonElement) {
-      statsReportJsonElement.textContent = JSON.stringify(
-        statsReportJson,
-        null,
-        2,
-      );
+      statsReportJsonElement.textContent = JSON.stringify(statsReportJson, null, 2);
     }
   });
 });
@@ -123,8 +110,7 @@ class SoraClient {
   async disconnect() {
     await this.connection.disconnect();
 
-    const receivedMessagesElement =
-      document.querySelector("#received-messages");
+    const receivedMessagesElement = document.querySelector("#received-messages");
     if (receivedMessagesElement) {
       receivedMessagesElement.innerHTML = "";
     }
@@ -139,10 +125,7 @@ class SoraClient {
 
   async sendMessage(message: string) {
     if (message !== "") {
-      await this.connection.sendMessage(
-        "#example",
-        new TextEncoder().encode(message),
-      );
+      await this.connection.sendMessage("#example", new TextEncoder().encode(message));
     }
   }
 
@@ -165,8 +148,7 @@ class SoraClient {
       }
 
       // 送信ボタンを有効にする
-      const sendMessageButton =
-        document.querySelector<HTMLButtonElement>("#send-message");
+      const sendMessageButton = document.querySelector<HTMLButtonElement>("#send-message");
       if (sendMessageButton) {
         sendMessageButton.disabled = false;
       }

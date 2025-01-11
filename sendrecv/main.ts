@@ -37,14 +37,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     for (const report of statsReport.values()) {
       statsReportJson.push(report);
     }
-    const statsReportJsonElement =
-      document.querySelector<HTMLPreElement>("#stats-report-json");
+    const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
     if (statsReportJsonElement) {
-      statsReportJsonElement.textContent = JSON.stringify(
-        statsReportJson,
-        null,
-        2,
-      );
+      statsReportJsonElement.textContent = JSON.stringify(statsReportJson, null, 2);
     }
   });
 });
@@ -66,11 +61,7 @@ class SoraClient {
     this.options = {};
 
     this.sora = Sora.connection(signalingUrl, this.debug);
-    this.connection = this.sora.sendrecv(
-      this.channelId,
-      undefined,
-      this.options,
-    );
+    this.connection = this.sora.sendrecv(this.channelId, undefined, this.options);
     this.connection.on("notify", this.onnotify.bind(this));
     this.connection.on("track", this.ontrack.bind(this));
     this.connection.on("removetrack", this.onremovetrack.bind(this));
