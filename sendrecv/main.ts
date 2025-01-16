@@ -63,9 +63,8 @@ class SoraClient {
   }
 
   async connect(stream: MediaStream) {
-    if (this.secretKey !== "") {
+    if (this.secretKey) {
       const jwt = await generateJwt(this.channelId, this.secretKey);
-      console.log(`jwt=${jwt}`);
       this.connection.metadata = {
         access_token: jwt,
       };

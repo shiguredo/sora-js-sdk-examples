@@ -14,17 +14,16 @@ export const generateJwt = async (channelId: string, secretKey: string): Promise
 };
 
 export const generateChannelId = (): string => {
-  // qs で channelId が指定されている場合はそれを利用する
+  // qs を確認する
   const urlParams = new URLSearchParams(window.location.search);
   const qsChannelId = urlParams.get("channelId") || "";
-  if (qsChannelId) {
-    return qsChannelId;
-  }
+  const qsChannelIdPrefix = urlParams.get("channelIdPrefix") || "";
+  const qsChannelIdSuffix = urlParams.get("channelIdSuffix") || "";
 
-  // qs が指定されていない場合は環境変数を利用する
-  const channelId = import.meta.env.VITE_SORA_CHANNEL_ID;
-  const channelIdPrefix = import.meta.env.VITE_SORA_CHANNEL_ID_PREFIX;
-  const channelIdSuffix = import.meta.env.VITE_SORA_CHANNEL_ID_SUFFIX;
+  // qs が指定されていればその値を優先するようにする
+  const channelId = qsChannelId || import.meta.env.VITE_SORA_CHANNEL_ID || "";
+  const channelIdPrefix = qsChannelIdPrefix || import.meta.env.VITE_SORA_CHANNEL_ID_PREFIX || "";
+  const channelIdSuffix = qsChannelIdSuffix || import.meta.env.VITE_SORA_CHANNEL_ID_SUFFIX || "";
 
   // 環境変数の channelId が指定されていない場合はエラー
   if (!channelId) {

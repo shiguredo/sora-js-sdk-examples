@@ -4,10 +4,10 @@ test("sendrecv x2", async ({ browser }) => {
   const sendrecv1 = await browser.newPage();
   const sendrecv2 = await browser.newPage();
 
-  // テストごとに異なる channelName を生成
-  const channelName = crypto.randomUUID();
-  await sendrecv1.goto(`http://localhost:9000/sendrecv/?channelName=${channelName}`);
-  await sendrecv2.goto(`http://localhost:9000/sendrecv/?channelName=${channelName}`);
+  const channelIdSuffix = crypto.randomUUID();
+
+  await sendrecv1.goto(`http://localhost:9000/sendrecv/?channelIdSuffix=${channelIdSuffix}`);
+  await sendrecv2.goto(`http://localhost:9000/sendrecv/?channelIdSuffix=${channelIdSuffix}`);
 
   await sendrecv1.click("#connect");
   await sendrecv2.click("#connect");
