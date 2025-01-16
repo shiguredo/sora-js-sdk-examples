@@ -24,6 +24,7 @@ jobs:
         browser: ["chromium"]
     env:
       VITE_SORA_SIGNALING_URL: ${{ secrets.TEST_SIGNALING_URL }}
+      VITE_SORA_CHANNEL_ID: "sora-js-sdk-examples-e2e-test"
       VITE_SORA_CHANNEL_ID_PREFIX: ${{ secrets.TEST_CHANNEL_ID_PREFIX }}
       VITE_SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}
     steps:
