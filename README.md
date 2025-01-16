@@ -31,16 +31,31 @@ $ pnpm install
 $ pnpm dev
 ```
 
+### Sora を利用する場合の .env.local の設定
+
+```bash
+# Sora の Signaling URL を指定してください
+VITE_SORA_SIGNALING_URL=wss://sora.example.com/signaling
+# 好きな文字列を指定してください
+VITE_SORA_CHANNEL_ID=example
+# VITE_SORA_CHANNEL_ID_PREFIX=
+# VITE_SORA_CHANNEL_ID_SUFFIX=
+# VITE_SECRET_KEY=
+```
+
 ### Sora Labo を利用する場合の .env.local の設定
 
 ```bash
 # Sora Labo の Signaling URL を指定してください
 VITE_SORA_SIGNALING_URL=wss://sora.sora-labo.shiguredo.app/signaling
+# 好きな文字列を指定してください
+VITE_SORA_CHANNEL_ID=example
 # Sora Labo にログインした GitHub ログイン名と GitHub ID を指定してください
 # {GitHubLoginName}_{GitHubID}_ の用に指定してください
-VITE_SORA_CHANNEL_ID_PREFIX={GitHubLoginName}_{GitHubId}_
+VITE_SORA_CHANNEL_ID_PREFIX={github_login_name}_{github_id}_
+# VITE_SORA_CHANNEL_ID_SUFFIX=
 # Sora Labo の Secret Key を指定してください
-VITE_SECRET_KEY=SecretKey
+VITE_SECRET_KEY={secret_key}
 ```
 
 ### Sora Cloud を利用する場合の .env.local の設定
@@ -48,21 +63,13 @@ VITE_SECRET_KEY=SecretKey
 ```bash
 # Sora Cloud の Signaling URL を指定してください
 VITE_SORA_SIGNALING_URL=wss://sora.sora-cloud.shiguredo.app/signaling
-# Sora Cloud のプロジェクト ID + @ を指定してください
-VITE_SORA_CHANNEL_ID_PREFIX={ProjectId}@
-# Sora Cloud の API Key を指定してください
-VITE_SECRET_KEY=SecretKey
-```
-
-### Sora を利用する場合の .env.local の設定
-
-```bash
-# Sora の Signaling URL を指定してください
-VITE_SORA_SIGNALING_URL=wss://sora.example.com/signaling
 # 好きな文字列を指定してください
-VITE_SORA_CHANNEL_ID_PREFIX=example
-# 設定不要です
-VITE_SECRET_KEY=
+VITE_SORA_CHANNEL_ID=example
+# VITE_SORA_CHANNEL_ID_PREFIX=
+# Sora Cloud の @ + プロジェクト ID を指定してください
+VITE_SORA_CHANNEL_ID_SUFFIX=@{project_id}
+# Sora Cloud の API Key を指定してください
+VITE_SECRET_KEY={api_key}
 ```
 
 ## ライセンス

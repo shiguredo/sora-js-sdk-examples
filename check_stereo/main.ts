@@ -5,19 +5,14 @@ import Sora, {
   type ConnectionSubscriber,
   type ConnectionOptions,
 } from "sora-js-sdk";
-import { generateJwt } from "../src/misc";
+import { generateChannelId, generateJwt } from "../src/misc";
 
 document.addEventListener("DOMContentLoaded", async () => {
   // 環境変数の読み込み
   const signalingUrl = import.meta.env.VITE_SORA_SIGNALING_URL;
-  const channelIdPrefix = import.meta.env.VITE_SORA_CHANNEL_ID_PREFIX;
-  const channelIdSuffix = import.meta.env.VITE_SORA_CHANNEL_ID_SUFFIX;
   const secretKey = import.meta.env.VITE_SECRET_KEY;
 
-  // URL から channelName パラメータを取得
-  const urlParams = new URLSearchParams(window.location.search);
-  const channelName = urlParams.get("channelName") || "";
-  const channelId = `${channelIdPrefix}:${channelName}:${channelIdSuffix}`;
+  const channelId = generateChannelId();
 
   const sendonly = new SendonlyClient(signalingUrl, channelId, secretKey);
   const recvonly = new RecvonlyClient(signalingUrl, channelId, secretKey);
