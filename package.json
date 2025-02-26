@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/shiguredo/sora-js-sdk-examples#readme",
   "dependencies": {
-    "jose": "5.9.6",
+    "jose": "6.0.7",
     "sora-js-sdk": "2024.2.2"
   },
   "devDependencies": {
@@ -30,7 +30,7 @@
     "jsdom": "26.0.0",
     "tslib": "2.8.1",
     "typescript": "5.7.3",
-    "vite": "6.1.0"
+    "vite": "6.2.0"
   },
   "packageManager": "pnpm@10.4.0",
   "engines": {
