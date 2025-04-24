@@ -310,8 +310,12 @@ class RecvonlyClient {
   }
 
   async connect(): Promise<void> {
-    const jwt = await generateJwt(this.channelId, this.secretKey);
-    this.connection.metadata = { access_token: jwt };
+    if (this.secretKey) {
+      const jwt = await generateJwt(this.channelId, this.secretKey);
+      this.connection.metadata = {
+        access_token: jwt,
+      };
+    }
 
     const forceStereoOutputElement = document.querySelector<HTMLInputElement>("#forceStereoOutput");
     const forceStereoOutput = forceStereoOutputElement ? forceStereoOutputElement.checked : false;
