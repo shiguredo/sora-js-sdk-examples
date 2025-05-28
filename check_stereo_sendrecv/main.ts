@@ -93,10 +93,10 @@ class SendrecvClient {
   private sora: SoraConnection;
   private connection: ConnectionPublisher;
 
-  private sendonlyCanvas: HTMLCanvasElement | null = null;
-  private sendonlyCanvasCtx: CanvasRenderingContext2D | null = null;
-  private recvonlyCanvas: HTMLCanvasElement | null = null;
-  private recvonlyCanvasCtx: CanvasRenderingContext2D | null = null;
+  private localCanvas: HTMLCanvasElement | null = null;
+  private localCanvasCtx: CanvasRenderingContext2D | null = null;
+  private remoteCanvas: HTMLCanvasElement | null = null;
+  private remoteCanvasCtx: CanvasRenderingContext2D | null = null;
 
   private channelCheckInterval: number | undefined;
 
@@ -141,7 +141,7 @@ class SendrecvClient {
     this.connection.options.forceStereoOutput = forceStereoOutput;
 
     await this.connection.connect(stream);
-    this.analyzeSendonlyAudioStream(new MediaStream([audioTrack]));
+    this.analyzeLocalAudioStream(new MediaStream([audioTrack]));
 
     // チャネル数の定期チェックを開始
     this.startChannelCheck();
@@ -159,22 +159,20 @@ class SendrecvClient {
   }
 
   private initializeCanvases() {
-    this.sendonlyCanvas = document.querySelector<HTMLCanvasElement>(
-      `#sendonly${this.clientId}-waveform`,
-    );
-    if (this.sendonlyCanvas) {
-      this.sendonlyCanvasCtx = this.sendonlyCanvas.getContext("2d");
+    this.localCanvas = document.querySelector<HTMLCanvasElement>(`#local${this.clientId}-waveform`);
+    if (this.localCanvas) {
+      this.localCanvasCtx = this.localCanvas.getContext("2d");
     }
 
-    this.recvonlyCanvas = document.querySelector<HTMLCanvasElement>(
-      `#recvonly${this.clientId}-waveform`,
+    this.remoteCanvas = document.querySelector<HTMLCanvasElement>(
+      `#remote${this.clientId}-waveform`,
     );
-    if (this.recvonlyCanvas) {
-      this.recvonlyCanvasCtx = this.recvonlyCanvas.getContext("2d");
+    if (this.remoteCanvas) {
+      this.remoteCanvasCtx = this.remoteCanvas.getContext("2d");
     }
   }
 
-  analyzeSendonlyAudioStream(stream: MediaStream) {
+  analyzeLocalAudioStream(stream: MediaStream) {
     const audioContext = new AudioContext({
       sampleRate: 48000,
       latencyHint: "interactive",
@@ -199,7 +197,7 @@ class SendrecvClient {
       analyserL.getFloatTimeDomainData(dataArrayL);
       analyserR.getFloatTimeDomainData(dataArrayR);
 
-      this.drawSendonlyWaveforms(dataArrayL, dataArrayR);
+      this.drawLocalWaveforms(dataArrayL, dataArrayR);
 
       let difference = 0;
       for (let i = 0; i < dataArrayL.length; i++) {
@@ -211,18 +209,18 @@ class SendrecvClient {
 
       // differenceの値を表示する要素を追加
       const differenceElement = document.querySelector<HTMLDivElement>(
-        `#sendonly${this.clientId}-difference-value`,
+        `#local${this.clientId}-difference-value`,
       );
       if (differenceElement) {
         differenceElement.textContent = `Difference: ${difference.toFixed(6)}`;
       }
 
-      // sendonly-stereo 要素に結果を反映
-      const sendonlyStereoElement = document.querySelector<HTMLDivElement>(
-        `#sendonly${this.clientId}-stereo`,
+      // local-stereo 要素に結果を反映
+      const localStereoElement = document.querySelector<HTMLDivElement>(
+        `#local${this.clientId}-stereo`,
       );
-      if (sendonlyStereoElement) {
-        sendonlyStereoElement.textContent = result;
+      if (localStereoElement) {
+        localStereoElement.textContent = result;
       }
 
       requestAnimationFrame(analyze);
@@ -235,7 +233,7 @@ class SendrecvClient {
     }
   }
 
-  analyzeRecvonlyAudioStream(stream: MediaStream) {
+  analyzeRemoteAudioStream(stream: MediaStream) {
     const audioContext = new AudioContext({
       sampleRate: 48000,
       latencyHint: "interactive",
@@ -260,7 +258,7 @@ class SendrecvClient {
       analyserL.getFloatTimeDomainData(dataArrayL);
       analyserR.getFloatTimeDomainData(dataArrayR);
 
-      this.drawRecvonlyWaveforms(dataArrayL, dataArrayR);
+      this.drawRemoteWaveforms(dataArrayL, dataArrayR);
 
       let difference = 0;
       for (let i = 0; i < dataArrayL.length; i++) {
@@ -272,18 +270,18 @@ class SendrecvClient {
 
       // differenceの値を表示する要素を追加
       const differenceElement = document.querySelector<HTMLDivElement>(
-        `#recvonly${this.clientId}-difference-value`,
+        `#remote${this.clientId}-difference-value`,
       );
       if (differenceElement) {
         differenceElement.textContent = `Difference: ${difference.toFixed(6)}`;
       }
 
       // 既存のコード
-      const recvonlyStereoElement = document.querySelector<HTMLDivElement>(
-        `#recvonly${this.clientId}-stereo`,
+      const remoteStereoElement = document.querySelector<HTMLDivElement>(
+        `#remote${this.clientId}-stereo`,
       );
-      if (recvonlyStereoElement) {
-        recvonlyStereoElement.textContent = result;
+      if (remoteStereoElement) {
+        remoteStereoElement.textContent = result;
       }
 
       requestAnimationFrame(analyze);
@@ -296,21 +294,21 @@ class SendrecvClient {
     }
   }
 
-  private drawSendonlyWaveforms(dataArrayL: Float32Array, dataArrayR: Float32Array) {
-    if (!this.sendonlyCanvasCtx || !this.sendonlyCanvas) return;
+  private drawLocalWaveforms(dataArrayL: Float32Array, dataArrayR: Float32Array) {
+    if (!this.localCanvasCtx || !this.localCanvas) return;
 
-    const width = this.sendonlyCanvas.width;
-    const height = this.sendonlyCanvas.height;
+    const width = this.localCanvas.width;
+    const height = this.localCanvas.height;
     const bufferLength = dataArrayL.length;
 
-    this.sendonlyCanvasCtx.fillStyle = "rgb(240, 240, 240)";
-    this.sendonlyCanvasCtx.fillRect(0, 0, width, height);
+    this.localCanvasCtx.fillStyle = "rgb(240, 240, 240)";
+    this.localCanvasCtx.fillRect(0, 0, width, height);
     const drawChannel = (dataArray: Float32Array, color: string, offset: number) => {
-      if (!this.sendonlyCanvasCtx) return;
+      if (!this.localCanvasCtx) return;
 
-      this.sendonlyCanvasCtx.lineWidth = 3;
-      this.sendonlyCanvasCtx.strokeStyle = color;
-      this.sendonlyCanvasCtx.beginPath();
+      this.localCanvasCtx.lineWidth = 3;
+      this.localCanvasCtx.strokeStyle = color;
+      this.localCanvasCtx.beginPath();
 
       const sliceWidth = (width * 1.0) / bufferLength;
       let x = 0;
@@ -320,48 +318,48 @@ class SendrecvClient {
         const y = height / 2 + v * height * 0.8 + offset;
 
         if (i === 0) {
-          this.sendonlyCanvasCtx?.moveTo(x, y);
+          this.localCanvasCtx?.moveTo(x, y);
         } else {
-          this.sendonlyCanvasCtx?.lineTo(x, y);
+          this.localCanvasCtx?.lineTo(x, y);
         }
 
         x += sliceWidth;
       }
 
-      this.sendonlyCanvasCtx?.lineTo(width, height / 2 + offset);
-      this.sendonlyCanvasCtx?.stroke();
+      this.localCanvasCtx?.lineTo(width, height / 2 + offset);
+      this.localCanvasCtx?.stroke();
     };
 
     // 左チャンネル（青）を少し上にずらして描画
-    this.sendonlyCanvasCtx.globalAlpha = 0.7;
+    this.localCanvasCtx.globalAlpha = 0.7;
     drawChannel(dataArrayL, "rgb(0, 0, 255)", -10);
 
     // 右チャンネル（赤）を少し下にずらして描画
-    this.sendonlyCanvasCtx.globalAlpha = 0.7;
+    this.localCanvasCtx.globalAlpha = 0.7;
     drawChannel(dataArrayR, "rgb(255, 0, 0)", 10);
 
     // モノラルかステレオかを判定して表示
     const isMonaural = this.isMonaural(dataArrayL, dataArrayR);
-    this.sendonlyCanvasCtx.fillStyle = "black";
-    this.sendonlyCanvasCtx.font = "20px Arial";
-    this.sendonlyCanvasCtx.fillText(isMonaural ? "Monaural" : "Stereo", 10, 30);
+    this.localCanvasCtx.fillStyle = "black";
+    this.localCanvasCtx.font = "20px Arial";
+    this.localCanvasCtx.fillText(isMonaural ? "Monaural" : "Stereo", 10, 30);
   }
 
-  private drawRecvonlyWaveforms(dataArrayL: Float32Array, dataArrayR: Float32Array) {
-    if (!this.recvonlyCanvasCtx || !this.recvonlyCanvas) return;
+  private drawRemoteWaveforms(dataArrayL: Float32Array, dataArrayR: Float32Array) {
+    if (!this.remoteCanvasCtx || !this.remoteCanvas) return;
 
-    const width = this.recvonlyCanvas.width;
-    const height = this.recvonlyCanvas.height;
+    const width = this.remoteCanvas.width;
+    const height = this.remoteCanvas.height;
     const bufferLength = dataArrayL.length;
 
-    this.recvonlyCanvasCtx.fillStyle = "rgb(240, 240, 240)";
-    this.recvonlyCanvasCtx.fillRect(0, 0, width, height);
+    this.remoteCanvasCtx.fillStyle = "rgb(240, 240, 240)";
+    this.remoteCanvasCtx.fillRect(0, 0, width, height);
     const drawChannel = (dataArray: Float32Array, color: string, offset: number) => {
-      if (!this.recvonlyCanvasCtx) return;
+      if (!this.remoteCanvasCtx) return;
 
-      this.recvonlyCanvasCtx.lineWidth = 3;
-      this.recvonlyCanvasCtx.strokeStyle = color;
-      this.recvonlyCanvasCtx.beginPath();
+      this.remoteCanvasCtx.lineWidth = 3;
+      this.remoteCanvasCtx.strokeStyle = color;
+      this.remoteCanvasCtx.beginPath();
 
       const sliceWidth = (width * 1.0) / bufferLength;
       let x = 0;
@@ -371,26 +369,26 @@ class SendrecvClient {
         const y = height / 2 + v * height * 0.8 + offset;
 
         if (i === 0) {
-          this.recvonlyCanvasCtx?.moveTo(x, y);
+          this.remoteCanvasCtx?.moveTo(x, y);
         } else {
-          this.recvonlyCanvasCtx?.lineTo(x, y);
+          this.remoteCanvasCtx?.lineTo(x, y);
         }
 
         x += sliceWidth;
       }
 
-      this.recvonlyCanvasCtx?.lineTo(width, height / 2 + offset);
-      this.recvonlyCanvasCtx?.stroke();
+      this.remoteCanvasCtx?.lineTo(width, height / 2 + offset);
+      this.remoteCanvasCtx?.stroke();
     };
 
-    this.recvonlyCanvasCtx.globalAlpha = 0.7;
+    this.remoteCanvasCtx.globalAlpha = 0.7;
     drawChannel(dataArrayL, "rgb(0, 0, 255)", -10);
     drawChannel(dataArrayR, "rgb(255, 0, 0)", 10);
 
     const isMonaural = this.isMonaural(dataArrayL, dataArrayR);
-    this.recvonlyCanvasCtx.fillStyle = "black";
-    this.recvonlyCanvasCtx.font = "20px Arial";
-    this.recvonlyCanvasCtx.fillText(isMonaural ? "Monaural" : "Stereo", 10, 30);
+    this.remoteCanvasCtx.fillStyle = "black";
+    this.remoteCanvasCtx.font = "20px Arial";
+    this.remoteCanvasCtx.fillText(isMonaural ? "Monaural" : "Stereo", 10, 30);
   }
 
   private isMonaural(dataArrayL: Float32Array, dataArrayR: Float32Array): boolean {
@@ -404,6 +402,8 @@ class SendrecvClient {
   }
 
   private onnotify(event: SignalingNotifyMessage) {
+    console.log(`Client ${this.clientId} notify:`, event);
+
     // 自分の connection_id を取得する
     if (
       event.event_type === "connection.created" &&
@@ -416,17 +416,38 @@ class SendrecvClient {
         connectionIdElement.textContent = event.connection_id;
       }
     }
+
+    // 他の connection が作成された場合も表示
+    if (event.event_type === "connection.created") {
+      console.log(`Client ${this.clientId}: New connection created - ${event.connection_id}`);
+    }
+
+    // connection が破棄された場合も表示
+    if (event.event_type === "connection.destroyed") {
+      console.log(`Client ${this.clientId}: Connection destroyed - ${event.connection_id}`);
+    }
   }
 
   private ontrack(event: RTCTrackEvent) {
     // Sora の場合、event.streams には MediaStream が 1 つだけ含まれる
     const stream = event.streams[0];
     if (event.track.kind === "audio") {
-      this.analyzeRecvonlyAudioStream(new MediaStream([event.track]));
+      this.analyzeRemoteAudioStream(new MediaStream([event.track]));
+
+      // 受信しているトラックの stream.id を表示する要素を動的に作成
+      const remoteInfoSection = document.querySelector(
+        `#remote${this.clientId}-stereo`,
+      )?.parentElement;
+      if (remoteInfoSection && !document.querySelector(`#remote${this.clientId}-stream-id`)) {
+        const streamIdElement = document.createElement("div");
+        streamIdElement.id = `remote${this.clientId}-stream-id`;
+        streamIdElement.textContent = stream.id;
+        remoteInfoSection.appendChild(streamIdElement);
+      }
 
       // <audio> 要素に音声ストリームを設定
       const audioElement = document.querySelector<HTMLAudioElement>(
-        `#recvonly${this.clientId}-audio`,
+        `#remote${this.clientId}-audio`,
       );
       if (audioElement) {
         audioElement.srcObject = stream;
@@ -439,7 +460,7 @@ class SendrecvClient {
     this.channelCheckInterval = window.setInterval(async () => {
       const channels = await this.getChannels();
       const channelElement = document.querySelector<HTMLDivElement>(
-        `#sendonly${this.clientId}-channels`,
+        `#local${this.clientId}-channels`,
       );
       if (channelElement) {
         channelElement.textContent =
