@@ -12,8 +12,8 @@ importers:
         specifier: 6.0.11
         version: 6.0.11
       sora-js-sdk:
-        specifier: file:../sora-js-sdk
-        version: file:../sora-js-sdk
+        specifier: 2025.1.0-canary.7
+        version: 2025.1.0-canary.7
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -517,8 +517,8 @@ packages:
     resolution: {integrity: sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==}
     engines: {node: '>=v12.22.7'}
 
-  sora-js-sdk@file:../sora-js-sdk:
-    resolution: {directory: ../sora-js-sdk, type: directory}
+  sora-js-sdk@2025.1.0-canary.7:
+    resolution: {integrity: sha512-+Nfn3NdVUd8Lg1HOf8XgKtEfbYdXaq3olby6NfK7GIQDv+FRmyIu4Um5/ECQ2XXJUpeojVXkeo82kO0KjgISpQ==}
     engines: {node: '>=20', pnpm: '>=8'}
 
   source-map-js@1.2.1:
@@ -1022,7 +1022,7 @@ snapshots:
     dependencies:
       xmlchars: 2.2.0
 
-  sora-js-sdk@file:../sora-js-sdk: {}
+  sora-js-sdk@2025.1.0-canary.7: {}
 
   source-map-js@1.2.1: {}
 
