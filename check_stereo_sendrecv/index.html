@@ -1,0 +1,120 @@
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" href="data:,">
+  <title>Stereo Check シンプルサンプル</title>
+
+  <style>
+    button {
+      margin: 15px 0;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .waveform-container {
+      margin: 20px 0;
+    }
+
+    .info-section {
+      margin: 10px 0;
+    }
+
+    .client-container {
+      border: 2px solid #ccc;
+      margin: 20px 0;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .client1 {
+      border-color: #007bff;
+    }
+
+    .client2 {
+      border-color: #28a745;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Stereo Check サンプル - 双方向通信</h2>
+
+  <div class="client-container client1">
+    <h2>Sendrecv Client 1</h2>
+    <!-- 音声入力デバイス選択 -->
+    <div>
+      <label for="sendrecv1-audio-input">音声入力デバイス：</label>
+      <select id="sendrecv1-audio-input"></select>
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" id="forceStereoOutput1" name="forceStereoOutput1"> forceStereoOutput
+      </label>
+    </div>
+    <button id="sendrecv1-connect">connect</button>
+    <div id="sendrecv1-connection-id"></div>
+
+    <div class="waveform-container">
+      <h3>送信音声の波形 (Client1 Sendonly)</h3>
+      <div class="info-section">
+        <div id="sendonly1-channels"></div>
+        <div id="sendonly1-difference-value"></div>
+        <div id="sendonly1-stereo"></div>
+      </div>
+      <canvas id="sendonly1-waveform" width="800" height="300"></canvas>
+    </div>
+
+    <div class="waveform-container">
+      <h3>受信音声の波形 (Client1 Recvonly)</h3>
+      <div class="info-section">
+        <div id="recvonly1-difference-value"></div>
+        <div id="recvonly1-stereo"></div>
+      </div>
+      <canvas id="recvonly1-waveform" width="800" height="300"></canvas>
+    </div>
+
+    <audio id="recvonly1-audio" controls autoplay muted></audio>
+  </div>
+
+  <div class="client-container client2">
+    <h2>Sendrecv Client 2</h2>
+    <!-- 音声入力デバイス選択 -->
+    <div>
+      <label for="sendrecv2-audio-input">音声入力デバイス：</label>
+      <select id="sendrecv2-audio-input"></select>
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" id="forceStereoOutput2" name="forceStereoOutput2"> forceStereoOutput
+      </label>
+    </div>
+    <button id="sendrecv2-connect">connect</button>
+    <div id="sendrecv2-connection-id"></div>
+
+    <div class="waveform-container">
+      <h3>送信音声の波形 (Client2 Sendonly)</h3>
+      <div class="info-section">
+        <div id="sendonly2-channels"></div>
+        <div id="sendonly2-difference-value"></div>
+        <div id="sendonly2-stereo"></div>
+      </div>
+      <canvas id="sendonly2-waveform" width="800" height="300"></canvas>
+    </div>
+
+    <div class="waveform-container">
+      <h3>受信音声の波形 (Client2 Recvonly)</h3>
+      <div class="info-section">
+        <div id="recvonly2-difference-value"></div>
+        <div id="recvonly2-stereo"></div>
+      </div>
+      <canvas id="recvonly2-waveform" width="800" height="300"></canvas>
+    </div>
+
+    <audio id="recvonly2-audio" controls autoplay muted></audio>
+  </div>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+
+</html>
