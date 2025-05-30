@@ -23,6 +23,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const recvonly = new RecvonlyClient(signalingUrl, channelId, secretKey);
 
+  // 最初にパーミッションを取得（Safariでのデバイス選択に必要）
+  try {
+    const permissionStream = await navigator.mediaDevices.getUserMedia({
+      video: false,
+      audio: true,
+    });
+    // すぐにストリームを停止
+    for (const track of permissionStream.getTracks()) {
+      track.stop();
+    }
+
+    // iOS Safariの場合、少し待ってからデバイス一覧を更新
+    const isIOSSafari =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent);
+    if (isIOSSafari) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  } catch (error) {
+    console.warn("パーミッションの取得に失敗しました:", error);
+  }
+
   // デバイスリストの取得と設定
   await updateDeviceLists();
 
@@ -32,36 +53,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.querySelector("#sendonly-connect-1")?.addEventListener("click", async () => {
     const audioInputSelect = document.querySelector<HTMLSelectElement>("#sendonly-audio-input-1");
     const selectedAudioDeviceId = audioInputSelect?.value;
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: false,
-      audio: {
-        deviceId: selectedAudioDeviceId ? { exact: selectedAudioDeviceId } : undefined,
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-        channelCount: 2,
-        sampleRate: 48000,
-        sampleSize: 16,
-      },
-    });
+    const stream = await getAudioStreamWithDevice(selectedAudioDeviceId);
     await sendonly1.connect(stream);
   });
 
   document.querySelector("#sendonly-connect-2")?.addEventListener("click", async () => {
     const audioInputSelect = document.querySelector<HTMLSelectElement>("#sendonly-audio-input-2");
     const selectedAudioDeviceId = audioInputSelect?.value;
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: false,
-      audio: {
-        deviceId: selectedAudioDeviceId ? { exact: selectedAudioDeviceId } : undefined,
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-        channelCount: 2,
-        sampleRate: 48000,
-        sampleSize: 16,
-      },
-    });
+    const stream = await getAudioStreamWithDevice(selectedAudioDeviceId);
     await sendonly2.connect(stream);
   });
 
@@ -74,19 +73,47 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function updateDeviceLists() {
   const devices = await navigator.mediaDevices.enumerateDevices();
 
+  // デバッグ用：取得したデバイス情報をログ出力
+  console.log(
+    "取得したデバイス:",
+    devices
+      .filter((d) => d.kind === "audioinput")
+      .map((d) => ({
+        deviceId: d.deviceId,
+        label: d.label,
+        groupId: d.groupId,
+      })),
+  );
+
   for (let i = 0; i < 2; i++) {
     const audioInputSelect = document.querySelector<HTMLSelectElement>(
       `#sendonly-audio-input-${i + 1}`,
     );
 
     if (audioInputSelect) {
+      const currentValue = audioInputSelect.value; // 現在選択されている値を保持
       audioInputSelect.innerHTML = "";
       const audioInputDevices = devices.filter((device) => device.kind === "audioinput");
+
       for (const device of audioInputDevices) {
+        // iOS SafariでdeviceIdが空の場合をチェック
+        if (!device.deviceId || device.deviceId === "default") {
+          console.warn("デバイスIDが無効:", device);
+          continue;
+        }
+
         const option = document.createElement("option");
         option.value = device.deviceId;
-        option.text = device.label || `マイク ${audioInputSelect.length + 1}`;
+        option.text = `${device.label || `マイク ${audioInputSelect.length + 1}`} (ID: ${device.deviceId.substring(0, 8)}...)`;
         audioInputSelect.appendChild(option);
+      }
+
+      // 以前選択されていた値を復元
+      if (
+        currentValue &&
+        Array.from(audioInputSelect.options).some((opt) => opt.value === currentValue)
+      ) {
+        audioInputSelect.value = currentValue;
       }
     }
   }
@@ -143,6 +170,21 @@ class SendonlyClient {
 
     // チャネル数の定期チェックを開始
     this.startChannelCheck();
+
+    // 実際に使用されたデバイスを確認
+    if (audioTrack) {
+      console.log("使用されたデバイス:", audioTrack.getSettings());
+      console.log("要求したデバイスID:", this.options.clientId);
+      console.log("実際のデバイスID:", audioTrack.getSettings().deviceId);
+
+      // 画面に使用されたデバイスIDを表示（どのクライアントが使っているかも表示）
+      const usedDeviceElement = document.querySelector<HTMLDivElement>("#used-device-id");
+      if (usedDeviceElement) {
+        const currentText = usedDeviceElement.textContent || "";
+        const newInfo = `使用中のデバイスID: ${audioTrack.getSettings().deviceId}`;
+        usedDeviceElement.textContent = currentText ? `${currentText} | ${newInfo}` : newInfo;
+      }
+    }
   }
 
   async getChannels(): Promise<number | undefined> {
@@ -536,5 +578,116 @@ class RecvonlyClient {
         this.initializeCanvas(stream.id);
       }
     }
+  }
+}
+
+// iOS Safari対応のためのgetUserMedia関数
+async function getAudioStreamWithDevice(deviceId: string | undefined): Promise<MediaStream> {
+  // iOS Safariの場合、まず簡単な制約でパーミッションを確認
+  const isIOSSafari =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent);
+
+  console.log(`デバイス選択を試行中: ${deviceId}, iOS Safari: ${isIOSSafari}`);
+
+  if (isIOSSafari && deviceId) {
+    try {
+      // iOS SafariではidealまたはexactではなくdeviceIdを直接指定
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: {
+          deviceId: deviceId, // exactやidealではなく直接指定
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+          channelCount: 2,
+          sampleRate: 48000,
+          sampleSize: 16,
+        },
+      });
+
+      // 実際に使用されたデバイスを確認
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        console.log("使用されたデバイス:", audioTrack.getSettings());
+        console.log("要求したデバイスID:", deviceId);
+        console.log("実際のデバイスID:", audioTrack.getSettings().deviceId);
+
+        // 画面に使用されたデバイスIDを表示（どのクライアントが使っているかも表示）
+        const usedDeviceElement = document.querySelector<HTMLDivElement>("#used-device-id");
+        if (usedDeviceElement) {
+          const currentText = usedDeviceElement.textContent || "";
+          const newInfo = `使用中のデバイスID: ${audioTrack.getSettings().deviceId}`;
+          usedDeviceElement.textContent = currentText ? `${currentText} | ${newInfo}` : newInfo;
+        }
+      }
+
+      return stream;
+    } catch (error) {
+      console.warn("指定されたデバイスでの取得に失敗、フォールバック:", error);
+      // フォールバック: idealを使用
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: {
+          deviceId: { ideal: deviceId },
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+          channelCount: 2,
+          sampleRate: 48000,
+          sampleSize: 16,
+        },
+      });
+
+      // フォールバック時も確認
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        console.log("フォールバック後の使用デバイス:", audioTrack.getSettings());
+
+        // 画面に使用されたデバイスIDを表示
+        const usedDeviceElement = document.querySelector<HTMLDivElement>("#used-device-id");
+        if (usedDeviceElement) {
+          const currentText = usedDeviceElement.textContent || "";
+          const newInfo = `使用中のデバイスID (フォールバック): ${audioTrack.getSettings().deviceId}`;
+          usedDeviceElement.textContent = currentText ? `${currentText} | ${newInfo}` : newInfo;
+        }
+      }
+
+      return stream;
+    }
+  } else {
+    // 通常のブラウザまたはデバイスIDが指定されていない場合
+    const audioConstraints: MediaTrackConstraints = {
+      echoCancellation: false,
+      noiseSuppression: false,
+      autoGainControl: false,
+      channelCount: 2,
+      sampleRate: 48000,
+      sampleSize: 16,
+    };
+
+    if (deviceId) {
+      audioConstraints.deviceId = { ideal: deviceId };
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: false,
+      audio: audioConstraints,
+    });
+
+    // 通常ブラウザでも確認
+    const audioTrack = stream.getAudioTracks()[0];
+    if (audioTrack) {
+      console.log("通常ブラウザでの使用デバイス:", audioTrack.getSettings());
+
+      // 画面に使用されたデバイスIDを表示
+      const usedDeviceElement = document.querySelector<HTMLDivElement>("#used-device-id");
+      if (usedDeviceElement) {
+        const currentText = usedDeviceElement.textContent || "";
+        const newInfo = `使用中のデバイスID: ${audioTrack.getSettings().deviceId}`;
+        usedDeviceElement.textContent = currentText ? `${currentText} | ${newInfo}` : newInfo;
+      }
+    }
+
+    return stream;
   }
 }

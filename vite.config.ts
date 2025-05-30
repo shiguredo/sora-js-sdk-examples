@@ -3,6 +3,9 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   root: resolve(__dirname),
+  server: {
+    allowedHosts: ["many-large-weevil.ngrok-free.app"],
+  },
   build: {
     rollupOptions: {
       input: {
