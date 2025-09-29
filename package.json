@@ -1,6 +1,6 @@
 {
   "name": "sora-js-sdk-examples",
-  "version": "2024.2.2",
+  "version": "2025.1.0",
   "description": "WebRTC SFU Sora JavaScript SDK Examples",
   "private": true,
   "scripts": {
@@ -22,7 +22,7 @@
   "homepage": "https://github.com/shiguredo/sora-js-sdk-examples#readme",
   "dependencies": {
     "jose": "6.0.10",
-    "sora-js-sdk": "2024.2.2"
+    "sora-js-sdk": "2025.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
