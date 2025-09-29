@@ -22,7 +22,7 @@
   "homepage": "https://github.com/shiguredo/sora-js-sdk-examples#readme",
   "dependencies": {
     "jose": "6.0.10",
-    "sora-js-sdk": "2025.1.0-canary.4"
+    "sora-js-sdk": "2025.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
