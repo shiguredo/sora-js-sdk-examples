@@ -1,20 +1,32 @@
 {
   "compilerOptions": {
+    // === 出力ターゲット ===
+    // コンパイル後の JavaScript の ECMAScript バージョン
     "target": "ESNext",
+    // 生成するモジュールシステム (ESM 出力)
     "module": "ESNext",
+    // strict ファミリーを一括有効化
     "strict": true,
-    "declaration": true,
-    "strictNullChecks": true,
-    "importHelpers": true,
+    // モジュール解決方式 (vite / esbuild など最新バンドラ向け)
     "moduleResolution": "Bundler",
+    // 実験的なデコレータ構文を有効にする
     "experimentalDecorators": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    // .json ファイルを import 可能にする
     "resolveJsonModule": true,
+    // @internal タグが付いた宣言を .d.ts から除外する
     "stripInternal": true,
+    // 生成ファイルの改行コードを LF に統一する
     "newLine": "LF",
+
+    // === エラー報告 ===
+    // ライブラリ側の型エラーも検出する (skipLibCheck をあえて切る)
+    "skipLibCheck": false,
+    // 暗黙的に @types/* を取り込まない (必要なものは明示的に import する)
     "types": [],
+
+    // === 出力フォーマット ===
+    // 利用可能な組み込み型ライブラリ (DOM API と最新の ECMAScript API)
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "tests"]
 }
