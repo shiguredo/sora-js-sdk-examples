@@ -10,7 +10,7 @@ import { generateChannelId, generateJwt } from "../src/misc";
 document.addEventListener("DOMContentLoaded", async () => {
   // 環境変数の読み込み
   const signalingUrl = import.meta.env.VITE_SORA_SIGNALING_URL;
-  const secretKey = import.meta.env.VITE_SECRET_KEY;
+  const secretKey = import.meta.env.VITE_SECRET_KEY || "";
 
   const channelId = generateChannelId();
 
