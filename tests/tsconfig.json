@@ -1,11 +1,9 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    // テストでは Playwright の型定義が Node.js の型を要求するため読み込む
-    "types": ["node"],
-    // サードパーティの型定義の深い検査は行わない
-    "skipLibCheck": true
+    // Playwright の型定義が Node.js の型を要求するため読み込む
+    "types": ["node"]
   },
-  "include": ["./**/*.ts"],
+  "include": ["."],
   "exclude": ["../node_modules"]
 }
