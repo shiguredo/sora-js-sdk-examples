@@ -14,8 +14,9 @@
     "url": "git+https://github.com/shiguredo/sora-js-sdk-examples.git"
   },
   "scripts": {
+    "check": "vp check",
     "fmt": "vp fmt --write .",
-    "lint": "vp lint --type-aware",
+    "lint": "vp lint",
     "typecheck": "tsc --noEmit",
     "test": "playwright test --project=chromium"
   },
