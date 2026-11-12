@@ -31,16 +31,12 @@ $ pnpm install
 $ pnpm dev
 ```
 
-ビルドや lint などのコマンドは `vp` 経由で実行します。
-`vp` は `pnpm install` で `node_modules` にインストールされるため、`vp` を別途インストールする必要はありません。
+pnpm の代わりに Vite+ の `vp` コマンドでも同じ手順で利用できます。
+`vp` のインストール方法は <https://viteplus.dev> を参照してください。
 
 ```bash
-$ pnpm install   # 初回のみ
-$ pnpm dev       # 開発サーバー
-$ pnpm build     # ビルド
-$ pnpm lint      # 型情報を使う lint
-$ pnpm fmt       # フォーマット
-$ pnpm test      # E2E テスト (初回は pnpm exec playwright install chromium が必要)
+$ vp install
+$ vp dev
 ```
 
 ### Sora を利用する場合の .env.local の設定
