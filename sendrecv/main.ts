@@ -124,6 +124,9 @@ class SoraClient {
 
   private ontrack(event: RTCTrackEvent): void {
     const stream = event.streams[0];
+    if (stream === undefined) {
+      return;
+    }
     const remoteVideoId = `remote-video-${stream.id}`;
     const remoteVideos = document.querySelector("#remote-videos");
     if (remoteVideos && !remoteVideos.querySelector(`#${remoteVideoId}`)) {

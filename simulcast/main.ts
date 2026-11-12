@@ -218,11 +218,15 @@ class SimulcastRecvonlySoraClient {
   }
 
   private ontrack(event: RTCTrackEvent): void {
+    const stream = event.streams[0];
+    if (stream === undefined) {
+      return;
+    }
     const remoteVideo = document.querySelector<HTMLVideoElement>(
       `#remote-video-${this.options.simulcastRid}`,
     );
     if (remoteVideo) {
-      remoteVideo.srcObject = event.streams[0];
+      remoteVideo.srcObject = stream;
     }
   }
 

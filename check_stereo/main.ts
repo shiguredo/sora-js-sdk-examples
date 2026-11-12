@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: false,
       audio: {
-        deviceId: selectedAudioDeviceId === "" ? undefined : { exact: selectedAudioDeviceId },
+        ...(selectedAudioDeviceId === "" ? {} : { deviceId: { exact: selectedAudioDeviceId } }),
         echoCancellation: false,
         noiseSuppression: false,
         autoGainControl: false,
@@ -79,8 +79,6 @@ class SendonlyClient {
   private canvas: HTMLCanvasElement | undefined;
   private canvasCtx: CanvasRenderingContext2D | undefined;
 
-  private channelCheckInterval: ReturnType<typeof setInterval> | undefined;
-
   constructor(
     signalingUrl: string,
     channelId: string,
@@ -128,7 +126,7 @@ class SendonlyClient {
     if (!sender) {
       return undefined;
     }
-    return sender.getParameters().codecs[0].channels;
+    return sender.getParameters().codecs[0]?.channels;
   }
 
   private initializeCanvas() {
@@ -166,8 +164,10 @@ class SendonlyClient {
       this.drawWaveforms(dataArrayL, dataArrayR);
 
       let difference = 0;
-      for (let i = 0; i < dataArrayL.length; i++) {
-        difference += Math.abs(dataArrayL[i] - dataArrayR[i]);
+      for (let i = 0; i < bufferLength; i++) {
+        const valueL = dataArrayL[i] ?? 0;
+        const valueR = dataArrayR[i] ?? 0;
+        difference += Math.abs(valueL - valueR);
       }
 
       const isStereo = difference !== 0;
@@ -221,7 +221,7 @@ class SendonlyClient {
       let x = 0;
 
       for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i];
+        const v = dataArray[i] ?? 0;
         const y = height / 2 + v * height * 0.8 + offset;
 
         if (i === 0) {
@@ -255,7 +255,9 @@ class SendonlyClient {
   private isMonaural(dataArrayL: Float32Array, dataArrayR: Float32Array): boolean {
     const threshold = 0.001;
     for (let i = 0; i < dataArrayL.length; i++) {
-      if (Math.abs(dataArrayL[i] - dataArrayR[i]) > threshold) {
+      const valueL = dataArrayL[i] ?? 0;
+      const valueR = dataArrayR[i] ?? 0;
+      if (Math.abs(valueL - valueR) > threshold) {
         return false;
       }
     }
@@ -276,7 +278,7 @@ class SendonlyClient {
   }
 
   private startChannelCheck() {
-    this.channelCheckInterval = globalThis.setInterval(() => {
+    globalThis.setInterval(() => {
       const channels = this.getChannels();
       const channelElement = document.querySelector<HTMLDivElement>("#sendonly-channels");
       if (channelElement) {
@@ -369,8 +371,10 @@ class RecvonlyClient {
       this.drawWaveforms(dataArrayL, dataArrayR);
 
       let difference = 0;
-      for (let i = 0; i < dataArrayL.length; i++) {
-        difference += Math.abs(dataArrayL[i] - dataArrayR[i]);
+      for (let i = 0; i < bufferLength; i++) {
+        const valueL = dataArrayL[i] ?? 0;
+        const valueR = dataArrayR[i] ?? 0;
+        difference += Math.abs(valueL - valueR);
       }
 
       const isStereo = difference !== 0;
@@ -424,7 +428,7 @@ class RecvonlyClient {
       let x = 0;
 
       for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i];
+        const v = dataArray[i] ?? 0;
         const y = height / 2 + v * height * 0.8 + offset;
 
         if (i === 0) {
@@ -453,7 +457,9 @@ class RecvonlyClient {
   private isMonaural(dataArrayL: Float32Array, dataArrayR: Float32Array): boolean {
     const threshold = 0.001;
     for (let i = 0; i < dataArrayL.length; i++) {
-      if (Math.abs(dataArrayL[i] - dataArrayR[i]) > threshold) {
+      const valueL = dataArrayL[i] ?? 0;
+      const valueR = dataArrayR[i] ?? 0;
+      if (Math.abs(valueL - valueR) > threshold) {
         return false;
       }
     }
@@ -476,6 +482,9 @@ class RecvonlyClient {
   private async ontrack(event: RTCTrackEvent): Promise<void> {
     // Sora の場合、event.streams には MediaStream が 1 つだけ含まれる
     const stream = event.streams[0];
+    if (stream === undefined) {
+      return;
+    }
     if (event.track.kind === "audio") {
       this.analyzeAudioStream(new MediaStream([event.track]));
 

@@ -7,6 +7,30 @@
     "module": "ESNext",
     // strict ファミリーを一括有効化
     "strict": true,
+    // 未使用のローカル変数をエラーにする
+    "noUnusedLocals": true,
+    // 未使用のパラメータをエラーにする
+    "noUnusedParameters": true,
+    // 未使用のラベルをエラーにする
+    "allowUnusedLabels": false,
+    // 到達不能なコードをエラーにする
+    "allowUnreachableCode": false,
+    // 関数のすべてのコードパスが値を返すことを強制する
+    "noImplicitReturns": true,
+    // switch 文の case のフォールスルーを禁止する
+    "noFallthroughCasesInSwitch": true,
+    // インデックスアクセスの結果に undefined を含める
+    "noUncheckedIndexedAccess": true,
+    // オプショナルプロパティと明示的な undefined を別物として扱う
+    "exactOptionalPropertyTypes": true,
+    // インデックスシグネチャ越しのプロパティアクセスをドット記法で許さない
+    "noPropertyAccessFromIndexSignature": true,
+    // override キーワードの付け忘れをエラーにする
+    "noImplicitOverride": true,
+    // 各ファイルを単独でトランスパイルできる形に制約する
+    "isolatedModules": true,
+    // import / export の構文を厳密にし、型のみの import に type を要求する
+    "verbatimModuleSyntax": true,
     // モジュール解決方式 (vite / esbuild など最新バンドラ向け)
     "moduleResolution": "Bundler",
     // 実験的なデコレータ構文を有効にする

@@ -103,7 +103,7 @@ class SoraClient {
         direction: "sendrecv",
         compress,
         // header が true の場合は sender_connection_id を追加
-        header: header ? [{ type: "sender_connection_id" }] : undefined,
+        ...(header ? { header: [{ type: "sender_connection_id" as const }] } : {}),
       },
     ];
     await this.connection.connect();

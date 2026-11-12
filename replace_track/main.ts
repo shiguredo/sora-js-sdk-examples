@@ -95,11 +95,13 @@ class SoraClient {
   }
 
   async replaceStream(stream: MediaStream) {
-    if (stream.getAudioTracks().length > 0) {
-      await this.connection.replaceAudioTrack(this.stream, stream.getAudioTracks()[0]);
+    const audioTrack = stream.getAudioTracks()[0];
+    if (audioTrack !== undefined) {
+      await this.connection.replaceAudioTrack(this.stream, audioTrack);
     }
-    if (stream.getVideoTracks().length > 0) {
-      await this.connection.replaceVideoTrack(this.stream, stream.getVideoTracks()[0]);
+    const videoTrack = stream.getVideoTracks()[0];
+    if (videoTrack !== undefined) {
+      await this.connection.replaceVideoTrack(this.stream, videoTrack);
     }
     this.stream = stream;
   }
@@ -148,6 +150,9 @@ class SoraClient {
 
   private ontrack(event: RTCTrackEvent): void {
     const stream = event.streams[0];
+    if (stream === undefined) {
+      return;
+    }
     const remoteVideoId = `remote-video-${stream.id}`;
     const remoteVideos = document.querySelector("#remote-videos");
     if (remoteVideos && !remoteVideos.querySelector(`#${remoteVideoId}`)) {

@@ -1,19 +1,11 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "strict": true,
-    "declaration": true,
-    "strictNullChecks": true,
-    "importHelpers": true,
-    "moduleResolution": "Bundler",
-    "experimentalDecorators": true,
-    "resolveJsonModule": true,
-    "stripInternal": true,
-    "skipLibCheck": true,
-    "newLine": "LF",
+    // テストでは Playwright の型定義が Node.js の型を要求するため読み込む
     "types": ["node"],
-    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+    // サードパーティの型定義の深い検査は行わない
+    "skipLibCheck": true
   },
-  "exclude": ["node_modules"]
+  "include": ["./**/*.ts"],
+  "exclude": ["../node_modules"]
 }

@@ -38,7 +38,7 @@ export default defineConfig({
   webServer: {
     command: "vp dev --port 9000",
     url: "http://localhost:9000/",
-    reuseExistingServer: process.env.CI === undefined,
+    reuseExistingServer: process.env["CI"] === undefined,
     stdout: "pipe",
     stderr: "pipe",
   },
