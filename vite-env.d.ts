@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+/// <reference types="vite-plus/client" />
 
 interface ImportMetaEnv {
   VITE_SORA_SIGNALING_URL: string;

@@ -1,6 +1,6 @@
 import { SignJWT } from "jose";
 
-export const generateJwt = async (channelId: string, secretKey: string): Promise<string> => {
+export const generateJwt = (channelId: string, secretKey: string): Promise<string> => {
   const header = { alg: "HS256", typ: "JWT" };
   return (
     new SignJWT({
@@ -15,10 +15,10 @@ export const generateJwt = async (channelId: string, secretKey: string): Promise
 
 export const generateChannelId = (): string => {
   // qs を確認する
-  const urlParams = new URLSearchParams(window.location.search);
-  const qsChannelId = urlParams.get("channelId") || "";
-  const qsChannelIdPrefix = urlParams.get("channelIdPrefix") || "";
-  const qsChannelIdSuffix = urlParams.get("channelIdSuffix") || "";
+  const urlParams = new URLSearchParams(globalThis.location.search);
+  const qsChannelId = urlParams.get("channelId") ?? "";
+  const qsChannelIdPrefix = urlParams.get("channelIdPrefix") ?? "";
+  const qsChannelIdSuffix = urlParams.get("channelIdSuffix") ?? "";
 
   // qs が指定されていればその値を優先するようにする
   const channelId = qsChannelId || import.meta.env.VITE_SORA_CHANNEL_ID || "";

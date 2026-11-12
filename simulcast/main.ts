@@ -1,13 +1,14 @@
-import Sora, {
-  type SoraConnection,
-  type ConnectionPublisher,
-  type SignalingNotifyMessage,
-  type ConnectionSubscriber,
-  type ConnectionOptions,
+import Sora from "sora-js-sdk";
+import type {
+  SoraConnection,
+  ConnectionPublisher,
+  SignalingNotifyMessage,
+  ConnectionSubscriber,
+  ConnectionOptions,
 } from "sora-js-sdk";
 import { generateChannelId, generateJwt } from "../src/misc";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const signalingUrl = import.meta.env.VITE_SORA_SIGNALING_URL;
   const secretKey = import.meta.env.VITE_SECRET_KEY || "";
 
@@ -64,7 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const statsReport = await sendonly.getStats();
     const statsReportJson: Record<string, unknown>[] = [];
     for (const report of statsReport.values()) {
-      statsReportJson.push(report);
+      // RTCStatsReport の値は lib.dom.d.ts で any 型に定義されているため、ここだけ型アサーションを使う
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      statsReportJson.push(report as Record<string, unknown>);
     }
     const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
     if (statsReportJsonElement) {
@@ -74,15 +77,15 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 class SimulcastSendonlySoraClient {
-  private debug = false;
+  private readonly debug = false;
 
-  private channelId: string;
-  private options: ConnectionOptions;
+  private readonly channelId: string;
+  private readonly options: ConnectionOptions;
 
-  private secretKey: string;
+  private readonly secretKey: string;
 
-  private sora: SoraConnection;
-  private connection: ConnectionPublisher;
+  private readonly sora: SoraConnection;
+  private readonly connection: ConnectionPublisher;
 
   constructor(
     signaling_url: string,
@@ -100,7 +103,7 @@ class SimulcastSendonlySoraClient {
   }
 
   async connect(stream: MediaStream) {
-    if (this.secretKey) {
+    if (this.secretKey !== "") {
       const jwt = await generateJwt(this.channelId, this.secretKey);
       this.connection.metadata = {
         access_token: jwt,
@@ -137,22 +140,22 @@ class SimulcastSendonlySoraClient {
     ) {
       const localVideoConnectionId = document.querySelector("#local-video-connection-id");
       if (localVideoConnectionId) {
-        localVideoConnectionId.textContent = `${event.connection_id}`;
+        localVideoConnectionId.textContent = event.connection_id;
       }
     }
   }
 }
 
 class SimulcastRecvonlySoraClient {
-  private debug = false;
+  private readonly debug = false;
 
-  private channelId: string;
-  private options: ConnectionOptions;
+  private readonly channelId: string;
+  private readonly options: ConnectionOptions;
 
-  private secretKey: string;
+  private readonly secretKey: string;
 
-  private sora: SoraConnection;
-  private connection: ConnectionSubscriber;
+  private readonly sora: SoraConnection;
+  private readonly connection: ConnectionSubscriber;
 
   constructor(
     signaling_url: string,
@@ -181,7 +184,7 @@ class SimulcastRecvonlySoraClient {
   }
 
   async disconnect() {
-    if (!this.connection) {
+    if (this.connection === undefined) {
       return;
     }
     await this.connection.disconnect();
@@ -214,7 +217,7 @@ class SimulcastRecvonlySoraClient {
     }
   }
 
-  private ontrack(event: RTCTrackEvent) {
+  private ontrack(event: RTCTrackEvent): void {
     const remoteVideo = document.querySelector<HTMLVideoElement>(
       `#remote-video-${this.options.simulcastRid}`,
     );
@@ -223,7 +226,7 @@ class SimulcastRecvonlySoraClient {
     }
   }
 
-  private onremovetrack(event: MediaStreamTrackEvent) {
+  private onremovetrack(_event: MediaStreamTrackEvent) {
     const remoteVideo = document.querySelector<HTMLVideoElement>(
       `#remote-video-${this.options.simulcastRid}`,
     );

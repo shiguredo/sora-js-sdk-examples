@@ -1,8 +1,9 @@
-import Sora, {
-  type SoraConnection,
-  type ConnectionPublisher,
-  type SignalingNotifyMessage,
-  type ConnectionOptions,
+import Sora from "sora-js-sdk";
+import type {
+  SoraConnection,
+  ConnectionPublisher,
+  SignalingNotifyMessage,
+  ConnectionOptions,
 } from "sora-js-sdk";
 import { generateChannelId, generateJwt } from "../src/misc";
 
@@ -27,15 +28,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 class SoraClient {
-  private debug = false;
+  private readonly debug = false;
 
-  private channelId: string;
-  private options: ConnectionOptions;
+  private readonly channelId: string;
+  private readonly options: ConnectionOptions;
 
-  private secretKey: string;
+  private readonly secretKey: string;
 
-  private sora: SoraConnection;
-  private connection: ConnectionPublisher;
+  private readonly sora: SoraConnection;
+  private readonly connection: ConnectionPublisher;
 
   constructor(signalingUrl: string, channelId: string, secretKey: string) {
     this.secretKey = secretKey;
@@ -58,7 +59,7 @@ class SoraClient {
   }
 
   async connect(stream: MediaStream) {
-    if (this.secretKey) {
+    if (this.secretKey !== "") {
       const jwt = await generateJwt(this.channelId, this.secretKey);
       this.connection.metadata = {
         access_token: jwt,
@@ -114,15 +115,19 @@ class SoraClient {
       remoteVideo.width = 160;
       remoteVideo.height = 120;
       remoteVideo.srcObject = stream;
-      remoteVideos.appendChild(remoteVideo);
+      remoteVideos.append(remoteVideo);
     }
   }
 
   private onremovetrack(event: MediaStreamTrackEvent): void {
-    const target = event.target as MediaStream;
-    const remoteVideo = document.querySelector<HTMLVideoElement>(`#remote-video-${target.id}`);
+    const target = event.target;
+    if (!(target instanceof MediaStream)) {
+      return;
+    }
+    const stream = target;
+    const remoteVideo = document.querySelector<HTMLVideoElement>(`#remote-video-${stream.id}`);
     if (remoteVideo) {
-      document.querySelector<HTMLDivElement>("#remote-videos")?.removeChild(remoteVideo);
+      remoteVideo.remove();
     }
   }
 }

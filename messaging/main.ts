@@ -1,11 +1,18 @@
-import Sora, {
-  type SoraConnection,
-  type ConnectionMessaging,
-  type SignalingNotifyMessage,
-  type DataChannelMessageEvent,
-  type DataChannelEvent,
+import Sora from "sora-js-sdk";
+import type {
+  SoraConnection,
+  ConnectionMessaging,
+  SignalingNotifyMessage,
+  DataChannelMessageEvent,
+  DataChannelEvent,
 } from "sora-js-sdk";
 import { generateChannelId, generateJwt } from "../src/misc";
+
+// チェックボックスがチェックされているかを返す
+const isChecked = (selector: string): boolean => {
+  const element = document.querySelector(selector);
+  return element instanceof HTMLInputElement && element.checked;
+};
 
 document.addEventListener("DOMContentLoaded", async () => {
   const signalingUrl = import.meta.env.VITE_SORA_SIGNALING_URL;
@@ -16,10 +23,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const client = new SoraClient(signalingUrl, channelId, secretKey);
 
   document.querySelector("#connect")?.addEventListener("click", async () => {
-    const checkCompress = document.getElementById("check-compress") as HTMLInputElement;
-    const compress = checkCompress.checked;
-    const checkHeader = document.getElementById("check-header") as HTMLInputElement;
-    const header = checkHeader.checked;
+    const compress = isChecked("#check-compress");
+    const header = isChecked("#check-header");
 
     await client.connect(compress, header);
   });
@@ -39,7 +44,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const statsReport = await client.getStats();
     const statsReportJson: Record<string, unknown>[] = [];
     for (const report of statsReport.values()) {
-      statsReportJson.push(report);
+      // RTCStatsReport の値は lib.dom.d.ts で any 型に定義されているため、ここだけ型アサーションを使う
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      statsReportJson.push(report as Record<string, unknown>);
     }
     const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
     if (statsReportJsonElement) {
@@ -49,15 +56,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 class SoraClient {
-  private debug = false;
+  private readonly debug = false;
 
-  private channelId: string;
-  private options: object;
+  private readonly channelId: string;
+  private readonly options: object;
 
-  private secretKey: string;
+  private readonly secretKey: string;
 
-  private sora: SoraConnection;
-  private connection: ConnectionMessaging;
+  private readonly sora: SoraConnection;
+  private readonly connection: ConnectionMessaging;
 
   constructor(signalingUrl: string, channelId: string, secretKey: string) {
     this.channelId = channelId;
@@ -75,14 +82,14 @@ class SoraClient {
     };
 
     this.sora = Sora.connection(signalingUrl, this.debug);
-    this.connection = this.sora.messaging(this.channelId, null, this.options);
+    this.connection = this.sora.messaging(this.channelId, undefined, this.options);
     this.connection.on("notify", this.onnotify.bind(this));
     this.connection.on("datachannel", this.ondatachannel.bind(this));
     this.connection.on("message", this.onmessage.bind(this));
   }
 
   async connect(compress: boolean, header: boolean) {
-    if (this.secretKey) {
+    if (this.secretKey !== "") {
       const jwt = await generateJwt(this.channelId, this.secretKey);
       this.connection.metadata = {
         access_token: jwt,
@@ -94,7 +101,7 @@ class SoraClient {
       {
         label: "#example",
         direction: "sendrecv",
-        compress: compress,
+        compress,
         // header が true の場合は sender_connection_id を追加
         header: header ? [{ type: "sender_connection_id" }] : undefined,
       },
@@ -155,12 +162,12 @@ class SoraClient {
     openDataChannel.textContent = new TextDecoder().decode(
       new TextEncoder().encode(event.datachannel.label),
     );
-    document.querySelector("#messaging")?.appendChild(openDataChannel);
+    document.querySelector("#messaging")?.append(openDataChannel);
   }
 
   private onmessage(event: DataChannelMessageEvent) {
     const message = document.createElement("li");
     message.textContent = new TextDecoder().decode(event.data);
-    document.querySelector("#received-messages")?.appendChild(message);
+    document.querySelector("#received-messages")?.append(message);
   }
 }

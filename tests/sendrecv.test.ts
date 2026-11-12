@@ -39,8 +39,20 @@ test("sendrecv x2", async ({ browser }) => {
   await sendrecv1.waitForSelector("#stats-report-json");
   // テキストコンテンツから統計情報を取得
   const sendrecv1StatsReportJson: Record<string, unknown>[] = await sendrecv1.evaluate(() => {
-    const statsReportElement = document.querySelector("#stats-report-json") as HTMLPreElement;
-    return statsReportElement ? JSON.parse(statsReportElement.textContent || "[]") : [];
+    const statsReportElement = document.querySelector("#stats-report-json");
+    if (
+      !(statsReportElement instanceof HTMLPreElement) ||
+      statsReportElement.textContent === null
+    ) {
+      return [];
+    }
+    const parsed: unknown = JSON.parse(statsReportElement.textContent);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter(
+      (report): report is Record<string, unknown> => typeof report === "object" && report !== null,
+    );
   });
 
   const sendrecv1VideoOutboundRtpStats = sendrecv1StatsReportJson.find(
@@ -66,8 +78,20 @@ test("sendrecv x2", async ({ browser }) => {
   await sendrecv2.waitForSelector("#stats-report-json");
   // デキストコンテンツから統計情報を取得
   const sendrecv2StatsReportJson: Record<string, unknown>[] = await sendrecv2.evaluate(() => {
-    const statsReportElement = document.querySelector("#stats-report-json") as HTMLPreElement;
-    return statsReportElement ? JSON.parse(statsReportElement.textContent || "[]") : [];
+    const statsReportElement = document.querySelector("#stats-report-json");
+    if (
+      !(statsReportElement instanceof HTMLPreElement) ||
+      statsReportElement.textContent === null
+    ) {
+      return [];
+    }
+    const parsed: unknown = JSON.parse(statsReportElement.textContent);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter(
+      (report): report is Record<string, unknown> => typeof report === "object" && report !== null,
+    );
   });
 
   const sendrecv2VideoOutboundRtpStats = sendrecv2StatsReportJson.find(

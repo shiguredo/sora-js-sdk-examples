@@ -1,9 +1,9 @@
-import Sora, {
-  type SignalingNotifyMessage,
-  type SignalingEvent,
-  type ConnectionPublisher,
-  type SoraConnection,
-  type ConnectionOptions,
+import Sora from "sora-js-sdk";
+import type {
+  SignalingNotifyMessage,
+  ConnectionPublisher,
+  SoraConnection,
+  ConnectionOptions,
 } from "sora-js-sdk";
 import { generateChannelId, generateJwt } from "../src/misc";
 
@@ -31,7 +31,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const statsReport = await client.getStats();
     const statsReportJson: Record<string, unknown>[] = [];
     for (const report of statsReport.values()) {
-      statsReportJson.push(report);
+      // RTCStatsReport の値は lib.dom.d.ts で any 型に定義されているため、ここだけ型アサーションを使う
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      statsReportJson.push(report as Record<string, unknown>);
     }
     const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
     if (statsReportJsonElement) {
@@ -41,15 +43,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 class SoraClient {
-  private debug = false;
+  private readonly debug = false;
 
-  private channelId: string;
-  private options: ConnectionOptions;
+  private readonly channelId: string;
+  private readonly options: ConnectionOptions;
 
-  private secretKey: string;
+  private readonly secretKey: string;
 
-  private sora: SoraConnection;
-  private connection: ConnectionPublisher;
+  private readonly sora: SoraConnection;
+  private readonly connection: ConnectionPublisher;
 
   constructor(
     signalingUrl: string,
@@ -62,12 +64,12 @@ class SoraClient {
     this.options = options;
 
     this.sora = Sora.connection(signalingUrl, this.debug);
-    this.connection = this.sora.sendonly(this.channelId, null, this.options);
+    this.connection = this.sora.sendonly(this.channelId, undefined, this.options);
     this.connection.on("notify", this.onnotify.bind(this));
   }
 
   async connect(stream: MediaStream): Promise<void> {
-    if (this.secretKey) {
+    if (this.secretKey !== "") {
       const jwt = await generateJwt(this.channelId, this.secretKey);
       this.connection.metadata = {
         access_token: jwt,
@@ -91,7 +93,7 @@ class SoraClient {
     }
   }
 
-  async getStats(): Promise<RTCStatsReport> {
+  getStats(): Promise<RTCStatsReport> {
     if (this.connection.pc === null) {
       throw new Error("PeerConnection is not ready");
     }

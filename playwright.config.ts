@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// pnpm exec playwright test --ui
+// vp exec playwright test --ui
 
 export default defineConfig({
   testDir: "tests",
@@ -36,9 +36,9 @@ export default defineConfig({
     // },
   ],
   webServer: {
-    command: "pnpm run dev --port 9000",
+    command: "vp dev --port 9000",
     url: "http://localhost:9000/",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: process.env.CI === undefined,
     stdout: "pipe",
     stderr: "pipe",
   },
