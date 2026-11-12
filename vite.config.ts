@@ -21,8 +21,8 @@ export default defineConfig({
   },
   // ===== oxlint =====
   lint: {
-    // node_modules とビルド成果物、ローカルに落とした Playwright のブラウザを対象外にする
-    ignorePatterns: ["node_modules/**", "dist/**", ".playwright-browsers/**"],
+    // node_modules とビルド成果物を対象外にする
+    ignorePatterns: ["node_modules/**", "dist/**"],
     options: {
       // 型情報を使う lint を有効化する
       typeAware: true,
