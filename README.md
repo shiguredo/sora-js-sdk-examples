@@ -22,19 +22,13 @@ Sora の機能を確認したりする場合は [Sora DevTools](https://github.c
 
 ## 使い方
 
+`vp` のインストール方法は <https://viteplus.dev> を参照してください。
+
 ```bash
 $ git clone git@github.com:shiguredo/sora-js-sdk-examples.git
 $ cd sora-js-sdk-examples
 # .env.local を作成して適切な値を設定してください
 $ cp .env.template .env.local
-$ pnpm install
-$ pnpm dev
-```
-
-pnpm の代わりに Vite+ でも同じ手順で利用できます。
-`vp` のインストール方法は <https://viteplus.dev> を参照してください。
-
-```bash
 $ vp install
 $ vp dev
 ```

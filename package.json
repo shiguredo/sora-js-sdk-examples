@@ -14,8 +14,6 @@
     "url": "git+https://github.com/shiguredo/sora-js-sdk-examples.git"
   },
   "scripts": {
-    "dev": "vp dev",
-    "build": "vp build",
     "fmt": "vp fmt --write .",
     "lint": "vp lint --type-aware",
     "typecheck": "tsc --noEmit",
