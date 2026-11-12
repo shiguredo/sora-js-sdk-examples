@@ -25,6 +25,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.querySelector("#disconnect")?.addEventListener("click", async () => {
     await sendrecv.disconnect();
   });
+
+  document.querySelector("#get-stats")?.addEventListener("click", async () => {
+    const statsReport = await sendrecv.getStats();
+    const statsReportJson: Record<string, unknown>[] = [];
+    for (const report of statsReport.values()) {
+      // RTCStatsReport の値は lib.dom.d.ts で any 型に定義されているため、ここだけ型アサーションを使う
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      statsReportJson.push(report as Record<string, unknown>);
+    }
+    const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
+    if (statsReportJsonElement) {
+      statsReportJsonElement.textContent = JSON.stringify(statsReportJson, null, 2);
+    }
+  });
 });
 
 class SoraClient {
@@ -87,6 +101,13 @@ class SoraClient {
     if (remoteVideos) {
       remoteVideos.innerHTML = "";
     }
+  }
+
+  getStats(): Promise<RTCStatsReport> {
+    if (this.connection.pc === null) {
+      throw new Error("PeerConnection is not ready");
+    }
+    return this.connection.pc.getStats();
   }
 
   private onnotify(event: SignalingNotifyMessage): void {
