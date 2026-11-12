@@ -52,5 +52,5 @@
     // 利用可能な組み込み型ライブラリ (DOM API と最新の ECMAScript API)
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
-  "exclude": ["node_modules", "tests"]
+  "exclude": ["node_modules", "e2e-tests"]
 }
