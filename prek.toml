@@ -1,0 +1,43 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+default_stages = ["pre-commit"]
+
+# prek 組み込みフック (オフラインで動作する Rust ネイティブ実装)
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "trailing-whitespace" },
+  { id = "end-of-file-fixer" },
+  { id = "check-yaml" },
+  { id = "check-toml" },
+  # マージコンフリクトマーカーが残ったコミットを防ぐ
+  { id = "check-merge-conflict" },
+  # 秘密鍵の誤コミットを防ぐ
+  { id = "detect-private-key" },
+]
+
+# プロジェクト固有のローカルフック
+# priority が小さいほど先に実行される。同じ priority なら並列実行される
+[[repos]]
+repo = "local"
+
+# vp check: フォーマット (oxfmt) と lint (oxlint type-aware) と型チェックをまとめて実行
+[[repos.hooks]]
+id = "check"
+name = "vp check"
+entry = "vp check"
+language = "system"
+pass_filenames = false
+priority = 0
+
+# tsc --noEmit: E2E テストの型チェック
+# (本体の型チェックは vp check に含まれるため、別設定の e2e-tests だけを対象にする)
+[[repos.hooks]]
+id = "typecheck"
+name = "tsc --noEmit (e2e-tests)"
+entry = "vp exec tsc --noEmit -p e2e-tests/tsconfig.json"
+language = "system"
+pass_filenames = false
+priority = 10
