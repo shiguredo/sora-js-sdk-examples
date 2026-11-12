@@ -23,6 +23,10 @@ export default defineConfig({
   fmt: {
     ignorePatterns: ["**/index.html"],
   },
+  // vp test は Vitest で実行するため、Playwright の E2E テストは対象外にする
+  test: {
+    include: ["src/**/*.test.ts"],
+  },
   // ===== oxlint =====
   lint: {
     // node_modules とビルド成果物、ローカルに落とした Playwright のブラウザを対象外にする
