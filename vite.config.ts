@@ -19,6 +19,10 @@ export default defineConfig({
       },
     },
   },
+  // vp test は Vitest で実行するため、Playwright の E2E テストは対象外にする
+  test: {
+    include: ["src/**/*.test.ts"],
+  },
   // ===== oxlint =====
   lint: {
     // node_modules とビルド成果物を対象外にする
