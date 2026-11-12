@@ -16,10 +16,10 @@
   "scripts": {
     "dev": "vp dev",
     "build": "vp build",
-    "test": "playwright test --project=chromium",
-    "lint": "vp lint --type-aware",
     "fmt": "vp fmt --write .",
-    "check": "tsc --noEmit"
+    "lint": "vp lint --type-aware",
+    "typecheck": "tsc --noEmit",
+    "test": "playwright test --project=chromium"
   },
   "dependencies": {
     "jose": "6.2.16",

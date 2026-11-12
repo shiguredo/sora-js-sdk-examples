@@ -31,7 +31,7 @@ $ pnpm install
 $ pnpm dev
 ```
 
-pnpm の代わりに Vite+ の `vp` コマンドでも同じ手順で利用できます。
+pnpm の代わりに Vite+ でも同じ手順で利用できます。
 `vp` のインストール方法は <https://viteplus.dev> を参照してください。
 
 ```bash
