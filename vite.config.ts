@@ -19,10 +19,6 @@ export default defineConfig({
       },
     },
   },
-  // vp fmt が index.html の不正なタグ構造を解析できず失敗するため、フォーマット対象から除外する
-  fmt: {
-    ignorePatterns: ["**/index.html"],
-  },
   // ===== oxlint =====
   lint: {
     // node_modules とビルド成果物、ローカルに落とした Playwright のブラウザを対象外にする
