@@ -18,7 +18,6 @@
     "fmt": "vp fmt --write .",
     "lint": "vp lint",
     "typecheck": "tsc --noEmit",
-    "test": "vp test run --passWithNoTests",
     "e2e-test": "vp exec playwright test --project=chromium"
   },
   "dependencies": {
