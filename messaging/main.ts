@@ -159,9 +159,7 @@ class SoraClient {
 
   private ondatachannel(event: DataChannelEvent) {
     const openDataChannel = document.createElement("li");
-    openDataChannel.textContent = new TextDecoder().decode(
-      new TextEncoder().encode(event.datachannel.label),
-    );
+    openDataChannel.textContent = event.datachannel.label;
     document.querySelector("#messaging")?.append(openDataChannel);
   }
 
