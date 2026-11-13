@@ -1,16 +1,17 @@
-import Sora, {
-  type SoraConnection,
-  type SignalingNotifyMessage,
-  type ConnectionPublisher,
-  type ConnectionSubscriber,
-  type ConnectionOptions,
+import Sora from "sora-js-sdk";
+import type {
+  SoraConnection,
+  SignalingNotifyMessage,
+  ConnectionPublisher,
+  ConnectionSubscriber,
+  ConnectionOptions,
 } from "sora-js-sdk";
 import { generateChannelId, generateJwt } from "../src/misc";
 
 document.addEventListener("DOMContentLoaded", async () => {
   // 環境変数の読み込み
   const signalingUrl = import.meta.env.VITE_SORA_SIGNALING_URL;
-  const secretKey = import.meta.env.VITE_SECRET_KEY;
+  const secretKey = import.meta.env.VITE_SECRET_KEY || "";
 
   const channelId = generateChannelId();
 
@@ -25,16 +26,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.querySelector("#sendonly-connect")?.addEventListener("click", async () => {
     const audioInputSelect = document.querySelector<HTMLSelectElement>("#sendonly-audio-input");
-    const selectedAudioDeviceId = audioInputSelect?.value;
+    const selectedAudioDeviceId = audioInputSelect?.value ?? "";
     const stream = await navigator.mediaDevices.getUserMedia({
       video: false,
       audio: {
-        deviceId: selectedAudioDeviceId ? { exact: selectedAudioDeviceId } : undefined,
+        ...(selectedAudioDeviceId === "" ? {} : { deviceId: { exact: selectedAudioDeviceId } }),
         echoCancellation: false,
         noiseSuppression: false,
         autoGainControl: false,
         channelCount: 2,
-        sampleRate: 48000,
+        sampleRate: 48_000,
         sampleSize: 16,
       },
     });
@@ -47,7 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // デバイスリストを更新する関数
-async function updateDeviceLists() {
+const updateDeviceLists = async (): Promise<void> => {
   const devices = await navigator.mediaDevices.enumerateDevices();
 
   const audioInputSelect = document.querySelector<HTMLSelectElement>("#sendonly-audio-input");
@@ -59,26 +60,24 @@ async function updateDeviceLists() {
       const option = document.createElement("option");
       option.value = device.deviceId;
       option.text = device.label || `マイク ${audioInputSelect.length + 1}`;
-      audioInputSelect.appendChild(option);
+      audioInputSelect.append(option);
     }
   }
-}
+};
 
 class SendonlyClient {
-  private debug = false;
+  private readonly debug = false;
 
-  private channelId: string;
-  private options: ConnectionOptions;
+  private readonly channelId: string;
+  private readonly options: ConnectionOptions;
 
-  private secretKey: string;
+  private readonly secretKey: string;
 
-  private sora: SoraConnection;
-  private connection: ConnectionPublisher;
+  private readonly sora: SoraConnection;
+  private readonly connection: ConnectionPublisher;
 
-  private canvas: HTMLCanvasElement | null = null;
-  private canvasCtx: CanvasRenderingContext2D | null = null;
-
-  private channelCheckInterval: number | undefined;
+  private canvas: HTMLCanvasElement | undefined;
+  private canvasCtx: CanvasRenderingContext2D | undefined;
 
   constructor(
     signalingUrl: string,
@@ -91,14 +90,14 @@ class SendonlyClient {
     this.options = options;
 
     this.sora = Sora.connection(signalingUrl, this.debug);
-    this.connection = this.sora.sendonly(this.channelId, null, this.options);
+    this.connection = this.sora.sendonly(this.channelId, undefined, this.options);
     this.connection.on("notify", this.onnotify.bind(this));
 
     this.initializeCanvas();
   }
 
   async connect(stream: MediaStream): Promise<void> {
-    if (this.secretKey) {
+    if (this.secretKey !== "") {
       const jwt = await generateJwt(this.channelId, this.secretKey);
       this.connection.metadata = {
         access_token: jwt,
@@ -106,7 +105,7 @@ class SendonlyClient {
     }
 
     const audioTrack = stream.getAudioTracks()[0];
-    if (!audioTrack) {
+    if (audioTrack === undefined) {
       throw new Error("Audio track not found");
     }
 
@@ -117,27 +116,29 @@ class SendonlyClient {
     this.startChannelCheck();
   }
 
-  async getChannels(): Promise<number | undefined> {
-    if (!this.connection.pc) {
+  getChannels(): number | undefined {
+    if (this.connection.pc === null) {
       return undefined;
     }
-    const sender = this.connection.pc.getSenders().find((sender) => sender.track?.kind === "audio");
+    const sender = this.connection.pc
+      .getSenders()
+      .find((candidate) => candidate.track?.kind === "audio");
     if (!sender) {
       return undefined;
     }
-    return sender.getParameters().codecs[0].channels;
+    return sender.getParameters().codecs[0]?.channels;
   }
 
   private initializeCanvas() {
-    this.canvas = document.querySelector<HTMLCanvasElement>("#sendonly-waveform");
+    this.canvas = document.querySelector<HTMLCanvasElement>("#sendonly-waveform") ?? undefined;
     if (this.canvas) {
-      this.canvasCtx = this.canvas.getContext("2d");
+      this.canvasCtx = this.canvas.getContext("2d") ?? undefined;
     }
   }
 
   analyzeAudioStream(stream: MediaStream) {
     const audioContext = new AudioContext({
-      sampleRate: 48000,
+      sampleRate: 48_000,
       latencyHint: "interactive",
     });
     const source = audioContext.createMediaStreamSource(stream);
@@ -163,8 +164,10 @@ class SendonlyClient {
       this.drawWaveforms(dataArrayL, dataArrayR);
 
       let difference = 0;
-      for (let i = 0; i < dataArrayL.length; i++) {
-        difference += Math.abs(dataArrayL[i] - dataArrayR[i]);
+      for (let i = 0; i < bufferLength; i++) {
+        const valueL = dataArrayL[i] ?? 0;
+        const valueR = dataArrayR[i] ?? 0;
+        difference += Math.abs(valueL - valueR);
       }
 
       const isStereo = difference !== 0;
@@ -190,12 +193,14 @@ class SendonlyClient {
     analyze();
 
     if (audioContext.state === "suspended") {
-      audioContext.resume();
+      void audioContext.resume();
     }
   }
 
   private drawWaveforms(dataArrayL: Float32Array, dataArrayR: Float32Array) {
-    if (!this.canvasCtx || !this.canvas) return;
+    if (!this.canvasCtx || !this.canvas) {
+      return;
+    }
 
     const width = this.canvas.width;
     const height = this.canvas.height;
@@ -204,17 +209,19 @@ class SendonlyClient {
     this.canvasCtx.fillStyle = "rgb(240, 240, 240)";
     this.canvasCtx.fillRect(0, 0, width, height);
     const drawChannel = (dataArray: Float32Array, color: string, offset: number) => {
-      if (!this.canvasCtx) return;
+      if (!this.canvasCtx) {
+        return;
+      }
 
       this.canvasCtx.lineWidth = 3;
       this.canvasCtx.strokeStyle = color;
       this.canvasCtx.beginPath();
 
-      const sliceWidth = (width * 1.0) / bufferLength;
+      const sliceWidth = width / bufferLength;
       let x = 0;
 
       for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i];
+        const v = dataArray[i] ?? 0;
         const y = height / 2 + v * height * 0.8 + offset;
 
         if (i === 0) {
@@ -248,7 +255,9 @@ class SendonlyClient {
   private isMonaural(dataArrayL: Float32Array, dataArrayR: Float32Array): boolean {
     const threshold = 0.001;
     for (let i = 0; i < dataArrayL.length; i++) {
-      if (Math.abs(dataArrayL[i] - dataArrayR[i]) > threshold) {
+      const valueL = dataArrayL[i] ?? 0;
+      const valueR = dataArrayR[i] ?? 0;
+      if (Math.abs(valueL - valueR) > threshold) {
         return false;
       }
     }
@@ -269,33 +278,34 @@ class SendonlyClient {
   }
 
   private startChannelCheck() {
-    this.channelCheckInterval = window.setInterval(async () => {
-      const channels = await this.getChannels();
+    globalThis.setInterval(() => {
+      const channels = this.getChannels();
       const channelElement = document.querySelector<HTMLDivElement>("#sendonly-channels");
       if (channelElement) {
         channelElement.textContent =
-          channels !== undefined ? `getParameters codecs channels: ${channels}` : "undefined";
+          channels === undefined ? "undefined" : `getParameters codecs channels: ${channels}`;
       }
-    }, 1000); // 1秒ごとにチェック
+      // 1 秒ごとにチャネル数を確認する
+    }, 1000);
   }
 }
 
 class RecvonlyClient {
-  private debug = false;
+  private readonly debug = false;
 
-  private channelId: string;
-  private options: object = {
+  private readonly channelId: string;
+  private readonly options: object = {
     video: false,
     audio: true,
   };
 
-  private secretKey: string;
+  private readonly secretKey: string;
 
-  private sora: SoraConnection;
-  private connection: ConnectionSubscriber;
+  private readonly sora: SoraConnection;
+  private readonly connection: ConnectionSubscriber;
 
-  private canvas: HTMLCanvasElement | null = null;
-  private canvasCtx: CanvasRenderingContext2D | null = null;
+  private canvas: HTMLCanvasElement | undefined;
+  private canvasCtx: CanvasRenderingContext2D | undefined;
 
   constructor(signalingUrl: string, channelId: string, secretKey: string) {
     this.channelId = channelId;
@@ -304,13 +314,15 @@ class RecvonlyClient {
     this.sora = Sora.connection(signalingUrl, this.debug);
     this.connection = this.sora.recvonly(this.channelId, undefined, this.options);
     this.connection.on("notify", this.onnotify.bind(this));
-    this.connection.on("track", this.ontrack.bind(this));
+    this.connection.on("track", (event) => {
+      void this.ontrack(event);
+    });
 
     this.initializeCanvas();
   }
 
   async connect(): Promise<void> {
-    if (this.secretKey) {
+    if (this.secretKey !== "") {
       const jwt = await generateJwt(this.channelId, this.secretKey);
       this.connection.metadata = {
         access_token: jwt,
@@ -325,15 +337,15 @@ class RecvonlyClient {
   }
 
   private initializeCanvas() {
-    this.canvas = document.querySelector<HTMLCanvasElement>("#recvonly-waveform");
+    this.canvas = document.querySelector<HTMLCanvasElement>("#recvonly-waveform") ?? undefined;
     if (this.canvas) {
-      this.canvasCtx = this.canvas.getContext("2d");
+      this.canvasCtx = this.canvas.getContext("2d") ?? undefined;
     }
   }
 
   analyzeAudioStream(stream: MediaStream) {
     const audioContext = new AudioContext({
-      sampleRate: 48000,
+      sampleRate: 48_000,
       latencyHint: "interactive",
     });
     const source = audioContext.createMediaStreamSource(stream);
@@ -359,8 +371,10 @@ class RecvonlyClient {
       this.drawWaveforms(dataArrayL, dataArrayR);
 
       let difference = 0;
-      for (let i = 0; i < dataArrayL.length; i++) {
-        difference += Math.abs(dataArrayL[i] - dataArrayR[i]);
+      for (let i = 0; i < bufferLength; i++) {
+        const valueL = dataArrayL[i] ?? 0;
+        const valueR = dataArrayR[i] ?? 0;
+        difference += Math.abs(valueL - valueR);
       }
 
       const isStereo = difference !== 0;
@@ -386,12 +400,14 @@ class RecvonlyClient {
     analyze();
 
     if (audioContext.state === "suspended") {
-      audioContext.resume();
+      void audioContext.resume();
     }
   }
 
   private drawWaveforms(dataArrayL: Float32Array, dataArrayR: Float32Array) {
-    if (!this.canvasCtx || !this.canvas) return;
+    if (!this.canvasCtx || !this.canvas) {
+      return;
+    }
 
     const width = this.canvas.width;
     const height = this.canvas.height;
@@ -400,17 +416,19 @@ class RecvonlyClient {
     this.canvasCtx.fillStyle = "rgb(240, 240, 240)";
     this.canvasCtx.fillRect(0, 0, width, height);
     const drawChannel = (dataArray: Float32Array, color: string, offset: number) => {
-      if (!this.canvasCtx) return;
+      if (!this.canvasCtx) {
+        return;
+      }
 
       this.canvasCtx.lineWidth = 3;
       this.canvasCtx.strokeStyle = color;
       this.canvasCtx.beginPath();
 
-      const sliceWidth = (width * 1.0) / bufferLength;
+      const sliceWidth = width / bufferLength;
       let x = 0;
 
       for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i];
+        const v = dataArray[i] ?? 0;
         const y = height / 2 + v * height * 0.8 + offset;
 
         if (i === 0) {
@@ -439,7 +457,9 @@ class RecvonlyClient {
   private isMonaural(dataArrayL: Float32Array, dataArrayR: Float32Array): boolean {
     const threshold = 0.001;
     for (let i = 0; i < dataArrayL.length; i++) {
-      if (Math.abs(dataArrayL[i] - dataArrayR[i]) > threshold) {
+      const valueL = dataArrayL[i] ?? 0;
+      const valueR = dataArrayR[i] ?? 0;
+      if (Math.abs(valueL - valueR) > threshold) {
         return false;
       }
     }
@@ -459,9 +479,12 @@ class RecvonlyClient {
     }
   }
 
-  private ontrack(event: RTCTrackEvent) {
+  private async ontrack(event: RTCTrackEvent): Promise<void> {
     // Sora の場合、event.streams には MediaStream が 1 つだけ含まれる
     const stream = event.streams[0];
+    if (stream === undefined) {
+      return;
+    }
     if (event.track.kind === "audio") {
       this.analyzeAudioStream(new MediaStream([event.track]));
 
@@ -469,7 +492,11 @@ class RecvonlyClient {
       const audioElement = document.querySelector<HTMLAudioElement>("#recvonly-audio");
       if (audioElement) {
         audioElement.srcObject = stream;
-        audioElement.play().catch((error) => console.error("音声の再生に失敗しました:", error));
+        try {
+          await audioElement.play();
+        } catch (error) {
+          console.error("音声の再生に失敗しました:", error);
+        }
       }
     }
   }

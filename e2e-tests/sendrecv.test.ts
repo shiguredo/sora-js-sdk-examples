@@ -39,23 +39,35 @@ test("sendrecv x2", async ({ browser }) => {
   await sendrecv1.waitForSelector("#stats-report-json");
   // テキストコンテンツから統計情報を取得
   const sendrecv1StatsReportJson: Record<string, unknown>[] = await sendrecv1.evaluate(() => {
-    const statsReportElement = document.querySelector("#stats-report-json") as HTMLPreElement;
-    return statsReportElement ? JSON.parse(statsReportElement.textContent || "[]") : [];
+    const statsReportElement = document.querySelector("#stats-report-json");
+    if (
+      !(statsReportElement instanceof HTMLPreElement) ||
+      statsReportElement.textContent === null
+    ) {
+      return [];
+    }
+    const parsed: unknown = JSON.parse(statsReportElement.textContent);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter(
+      (report): report is Record<string, unknown> => typeof report === "object" && report !== null,
+    );
   });
 
   const sendrecv1VideoOutboundRtpStats = sendrecv1StatsReportJson.find(
-    (stats) => stats.type === "outbound-rtp" && stats.kind === "video",
+    (stats) => stats["type"] === "outbound-rtp" && stats["kind"] === "video",
   );
   expect(sendrecv1VideoOutboundRtpStats).toBeDefined();
-  expect(sendrecv1VideoOutboundRtpStats?.bytesSent).toBeGreaterThan(0);
-  expect(sendrecv1VideoOutboundRtpStats?.packetsSent).toBeGreaterThan(0);
+  expect(sendrecv1VideoOutboundRtpStats?.["bytesSent"]).toBeGreaterThan(0);
+  expect(sendrecv1VideoOutboundRtpStats?.["packetsSent"]).toBeGreaterThan(0);
 
   const sendrecv1VideoInboundRtpStats = sendrecv1StatsReportJson.find(
-    (stats) => stats.type === "inbound-rtp" && stats.kind === "video",
+    (stats) => stats["type"] === "inbound-rtp" && stats["kind"] === "video",
   );
   expect(sendrecv1VideoInboundRtpStats).toBeDefined();
-  expect(sendrecv1VideoInboundRtpStats?.bytesReceived).toBeGreaterThan(0);
-  expect(sendrecv1VideoInboundRtpStats?.packetsReceived).toBeGreaterThan(0);
+  expect(sendrecv1VideoInboundRtpStats?.["bytesReceived"]).toBeGreaterThan(0);
+  expect(sendrecv1VideoInboundRtpStats?.["packetsReceived"]).toBeGreaterThan(0);
 
   // page2 stats report
 
@@ -66,23 +78,35 @@ test("sendrecv x2", async ({ browser }) => {
   await sendrecv2.waitForSelector("#stats-report-json");
   // デキストコンテンツから統計情報を取得
   const sendrecv2StatsReportJson: Record<string, unknown>[] = await sendrecv2.evaluate(() => {
-    const statsReportElement = document.querySelector("#stats-report-json") as HTMLPreElement;
-    return statsReportElement ? JSON.parse(statsReportElement.textContent || "[]") : [];
+    const statsReportElement = document.querySelector("#stats-report-json");
+    if (
+      !(statsReportElement instanceof HTMLPreElement) ||
+      statsReportElement.textContent === null
+    ) {
+      return [];
+    }
+    const parsed: unknown = JSON.parse(statsReportElement.textContent);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter(
+      (report): report is Record<string, unknown> => typeof report === "object" && report !== null,
+    );
   });
 
   const sendrecv2VideoOutboundRtpStats = sendrecv2StatsReportJson.find(
-    (stats) => stats.type === "outbound-rtp" && stats.kind === "video",
+    (stats) => stats["type"] === "outbound-rtp" && stats["kind"] === "video",
   );
   expect(sendrecv2VideoOutboundRtpStats).toBeDefined();
-  expect(sendrecv2VideoOutboundRtpStats?.bytesSent).toBeGreaterThan(0);
-  expect(sendrecv2VideoOutboundRtpStats?.packetsSent).toBeGreaterThan(0);
+  expect(sendrecv2VideoOutboundRtpStats?.["bytesSent"]).toBeGreaterThan(0);
+  expect(sendrecv2VideoOutboundRtpStats?.["packetsSent"]).toBeGreaterThan(0);
 
   const sendrecv2VideoInboundRtpStats = sendrecv2StatsReportJson.find(
-    (stats) => stats.type === "inbound-rtp" && stats.kind === "video",
+    (stats) => stats["type"] === "inbound-rtp" && stats["kind"] === "video",
   );
   expect(sendrecv2VideoInboundRtpStats).toBeDefined();
-  expect(sendrecv2VideoInboundRtpStats?.bytesReceived).toBeGreaterThan(0);
-  expect(sendrecv2VideoInboundRtpStats?.packetsReceived).toBeGreaterThan(0);
+  expect(sendrecv2VideoInboundRtpStats?.["bytesReceived"]).toBeGreaterThan(0);
+  expect(sendrecv2VideoInboundRtpStats?.["packetsReceived"]).toBeGreaterThan(0);
 
   await sendrecv1.click("#disconnect");
   await sendrecv2.click("#disconnect");

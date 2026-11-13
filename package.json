@@ -1,39 +1,40 @@
 {
   "name": "sora-js-sdk-examples",
   "version": "2025.1.0",
-  "description": "WebRTC SFU Sora JavaScript SDK Examples",
   "private": true,
-  "scripts": {
-    "dev": "vite",
-    "test": "playwright test --project=chromium",
-    "lint": "biome lint .",
-    "fmt": "biome format --write .",
-    "check": "tsc --noEmit"
+  "description": "WebRTC SFU Sora JavaScript SDK Examples",
+  "homepage": "https://github.com/shiguredo/sora-js-sdk-examples#readme",
+  "bugs": {
+    "url": "https://discord.gg/shiguredo"
   },
+  "license": "Apache-2.0",
+  "author": "Shiguredo Inc.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shiguredo/sora-js-sdk-examples.git"
   },
-  "author": "Shiguredo Inc.",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://discord.gg/shiguredo"
+  "scripts": {
+    "check": "vp check",
+    "fmt": "vp fmt --write .",
+    "lint": "vp lint",
+    "typecheck": "tsc --noEmit",
+    "e2e-test": "vp exec playwright test --project=chromium"
   },
-  "homepage": "https://github.com/shiguredo/sora-js-sdk-examples#readme",
   "dependencies": {
-    "jose": "6.0.10",
-    "sora-js-sdk": "2025.1.0"
+    "jose": "6.2.16",
+    "sora-js-sdk": "2026.1.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@playwright/test": "1.52.0",
-    "jsdom": "26.1.0",
-    "tslib": "2.8.1",
-    "typescript": "5.8.3",
-    "vite": "6.3.6"
+    "@playwright/test": "1.65.0",
+    "@types/node": "26.6.6",
+    "jsdom": "31.0.0",
+    "tslib": "2.9.1",
+    "typescript": "7.0.2",
+    "vite-plus": "1.5.0"
   },
   "engines": {
-    "node": ">=18",
+    "node": ">=22.18.0",
     "pnpm": ">=10"
-  }
+  },
+  "packageManager": "pnpm@10.27.0"
 }

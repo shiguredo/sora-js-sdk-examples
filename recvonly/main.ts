@@ -1,12 +1,13 @@
-import Sora, {
-  type SoraConnection,
-  type SignalingNotifyMessage,
-  type ConnectionSubscriber,
-  type ConnectionOptions,
+import Sora from "sora-js-sdk";
+import type {
+  SoraConnection,
+  SignalingNotifyMessage,
+  ConnectionSubscriber,
+  ConnectionOptions,
 } from "sora-js-sdk";
 import { generateChannelId, generateJwt } from "../src/misc";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // 環境変数の読み込み
   const signalingUrl = import.meta.env.VITE_SORA_SIGNALING_URL;
   const secretKey = import.meta.env.VITE_SECRET_KEY || "";
@@ -27,7 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const statsReport = await client.getStats();
     const statsReportJson: Record<string, unknown>[] = [];
     for (const report of statsReport.values()) {
-      statsReportJson.push(report);
+      // RTCStatsReport の値は lib.dom.d.ts で any 型に定義されているため、ここだけ型アサーションを使う
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      statsReportJson.push(report as Record<string, unknown>);
     }
     const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
     if (statsReportJsonElement) {
@@ -37,15 +40,15 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 class SoraClient {
-  private debug = false;
+  private readonly debug = false;
 
-  private channelId: string;
-  private options: ConnectionOptions;
+  private readonly channelId: string;
+  private readonly options: ConnectionOptions;
 
-  private secretKey: string;
+  private readonly secretKey: string;
 
-  private sora: SoraConnection;
-  private connection: ConnectionSubscriber;
+  private readonly sora: SoraConnection;
+  private readonly connection: ConnectionSubscriber;
 
   constructor(signalingUrl: string, channelId: string, secretKey: string) {
     this.channelId = channelId;
@@ -53,14 +56,14 @@ class SoraClient {
     this.options = {};
 
     this.sora = Sora.connection(signalingUrl, this.debug);
-    this.connection = this.sora.recvonly(this.channelId, null, this.options);
+    this.connection = this.sora.recvonly(this.channelId, undefined, this.options);
     this.connection.on("notify", this.onnotify.bind(this));
     this.connection.on("track", this.ontrack.bind(this));
     this.connection.on("removetrack", this.onremovetrack.bind(this));
   }
 
   async connect(): Promise<void> {
-    if (this.secretKey) {
+    if (this.secretKey !== "") {
       const jwt = await generateJwt(this.channelId, this.secretKey);
       this.connection.metadata = {
         access_token: jwt,
@@ -78,7 +81,7 @@ class SoraClient {
     }
   }
 
-  async getStats(): Promise<RTCStatsReport> {
+  getStats(): Promise<RTCStatsReport> {
     if (this.connection.pc === null) {
       throw new Error("PeerConnection is not ready");
     }
@@ -106,9 +109,12 @@ class SoraClient {
     }
   }
 
-  private ontrack(event: RTCTrackEvent) {
+  private ontrack(event: RTCTrackEvent): void {
     // Sora の場合、event.streams には MediaStream が 1 つだけ含まれる
     const stream = event.streams[0];
+    if (stream === undefined) {
+      return;
+    }
     const remoteVideoId = `remote-video-${stream.id}`;
     const remoteVideos = document.querySelector<HTMLDivElement>("#remote-videos");
     if (remoteVideos && !remoteVideos.querySelector(`#${remoteVideoId}`)) {
@@ -119,16 +125,20 @@ class SoraClient {
       remoteVideo.playsInline = true;
       remoteVideo.controls = true;
       remoteVideo.srcObject = stream;
-      remoteVideos.appendChild(remoteVideo);
+      remoteVideos.append(remoteVideo);
     }
   }
 
   private onremovetrack(event: MediaStreamTrackEvent) {
     // このトラックが属している MediaStream の id を取得する
-    const stream = event.target as MediaStream;
+    const target = event.target;
+    if (!(target instanceof MediaStream)) {
+      return;
+    }
+    const stream = target;
     const remoteVideo = document.querySelector(`#remote-video-${stream.id}`);
     if (remoteVideo) {
-      document.querySelector("#remote-videos")?.removeChild(remoteVideo);
+      remoteVideo.remove();
     }
   }
 }

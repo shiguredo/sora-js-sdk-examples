@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    // Playwright の型定義が Node.js の型を要求するため読み込む
+    "types": ["node"]
+  },
+  "include": ["."],
+  "exclude": ["../node_modules"]
+}

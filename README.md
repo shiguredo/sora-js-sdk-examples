@@ -1,6 +1,5 @@
 # Sora JavaScript SDK サンプル
 
-![Static Badge](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=flat&logo=biome)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 [Sora JavaScript SDK](https://github.com/shiguredo/sora-js-sdk) のサンプルです。
@@ -22,13 +21,15 @@ Sora の機能を確認したりする場合は [Sora DevTools](https://github.c
 
 ## 使い方
 
+`vp` のインストール方法は <https://viteplus.dev> を参照してください。
+
 ```bash
 $ git clone git@github.com:shiguredo/sora-js-sdk-examples.git
 $ cd sora-js-sdk-examples
 # .env.local を作成して適切な値を設定してください
 $ cp .env.template .env.local
-$ pnpm install
-$ pnpm dev
+$ vp install
+$ vp dev
 ```
 
 ### Sora を利用する場合の .env.local の設定

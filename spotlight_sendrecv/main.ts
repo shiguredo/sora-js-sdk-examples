@@ -1,8 +1,9 @@
-import Sora, {
-  type SoraConnection,
-  type ConnectionPublisher,
-  type SignalingNotifyMessage,
-  type ConnectionOptions,
+import Sora from "sora-js-sdk";
+import type {
+  SoraConnection,
+  ConnectionPublisher,
+  SignalingNotifyMessage,
+  ConnectionOptions,
 } from "sora-js-sdk";
 import { generateChannelId, generateJwt } from "../src/misc";
 
@@ -24,18 +25,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.querySelector("#disconnect")?.addEventListener("click", async () => {
     await sendrecv.disconnect();
   });
+
+  document.querySelector("#get-stats")?.addEventListener("click", async () => {
+    const statsReport = await sendrecv.getStats();
+    const statsReportJson: Record<string, unknown>[] = [];
+    for (const report of statsReport.values()) {
+      // RTCStatsReport の値は lib.dom.d.ts で any 型に定義されているため、ここだけ型アサーションを使う
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      statsReportJson.push(report as Record<string, unknown>);
+    }
+    const statsReportJsonElement = document.querySelector<HTMLPreElement>("#stats-report-json");
+    if (statsReportJsonElement) {
+      statsReportJsonElement.textContent = JSON.stringify(statsReportJson, null, 2);
+    }
+  });
 });
 
 class SoraClient {
-  private debug = false;
+  private readonly debug = false;
 
-  private channelId: string;
-  private options: ConnectionOptions;
+  private readonly channelId: string;
+  private readonly options: ConnectionOptions;
 
-  private secretKey: string;
+  private readonly secretKey: string;
 
-  private sora: SoraConnection;
-  private connection: ConnectionPublisher;
+  private readonly sora: SoraConnection;
+  private readonly connection: ConnectionPublisher;
 
   constructor(signalingUrl: string, channelId: string, secretKey: string) {
     this.secretKey = secretKey;
@@ -58,7 +73,7 @@ class SoraClient {
   }
 
   async connect(stream: MediaStream) {
-    if (this.secretKey) {
+    if (this.secretKey !== "") {
       const jwt = await generateJwt(this.channelId, this.secretKey);
       this.connection.metadata = {
         access_token: jwt,
@@ -88,6 +103,13 @@ class SoraClient {
     }
   }
 
+  getStats(): Promise<RTCStatsReport> {
+    if (this.connection.pc === null) {
+      throw new Error("PeerConnection is not ready");
+    }
+    return this.connection.pc.getStats();
+  }
+
   private onnotify(event: SignalingNotifyMessage): void {
     if (
       event.event_type === "connection.created" &&
@@ -102,6 +124,9 @@ class SoraClient {
 
   private ontrack(event: RTCTrackEvent): void {
     const stream = event.streams[0];
+    if (stream === undefined) {
+      return;
+    }
     const remoteVideoId = `remote-video-${stream.id}`;
     const remoteVideos = document.querySelector<HTMLDivElement>("#remote-videos");
     if (remoteVideos && !remoteVideos.querySelector(`#${remoteVideoId}`)) {
@@ -114,15 +139,19 @@ class SoraClient {
       remoteVideo.width = 160;
       remoteVideo.height = 120;
       remoteVideo.srcObject = stream;
-      remoteVideos.appendChild(remoteVideo);
+      remoteVideos.append(remoteVideo);
     }
   }
 
   private onremovetrack(event: MediaStreamTrackEvent): void {
-    const target = event.target as MediaStream;
-    const remoteVideo = document.querySelector<HTMLVideoElement>(`#remote-video-${target.id}`);
+    const target = event.target;
+    if (!(target instanceof MediaStream)) {
+      return;
+    }
+    const stream = target;
+    const remoteVideo = document.querySelector<HTMLVideoElement>(`#remote-video-${stream.id}`);
     if (remoteVideo) {
-      document.querySelector<HTMLDivElement>("#remote-videos")?.removeChild(remoteVideo);
+      remoteVideo.remove();
     }
   }
 }
